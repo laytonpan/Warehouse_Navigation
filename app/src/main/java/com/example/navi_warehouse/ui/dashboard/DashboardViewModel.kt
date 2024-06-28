@@ -1,13 +1,17 @@
 package com.example.navi_warehouse.ui.dashboard
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.navi_warehouse.Database.Item
+import com.example.navi_warehouse.Database.WarehouseDatabase
 
-class DashboardViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is dashboard Fragment"
-    }
-    val text: LiveData<String> = _text
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
+    private val itemDao = WarehouseDatabase.getDatabase(application).itemDao()
+
+    // Expose the list of items as LiveData
+    val allItems: LiveData<List<Item>> = itemDao.getAllItems()
 }
