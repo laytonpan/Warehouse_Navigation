@@ -30,6 +30,7 @@ public class Item {
     @ColumnInfo(name = "location_id")
     private String locationId;
 
+
     // Constructors, Getters and Setters
     public Item(int id, String name, String codeName, double price, String size, double weight, String category, String locationId) {
         this.id = id;
@@ -58,4 +59,5 @@ public class Item {
     public void setCategory(String category) { this.category = category; }
     public String getLocationId() { return locationId; }
     public void setLocationId(String locationId) { this.locationId = locationId; }
+
 }

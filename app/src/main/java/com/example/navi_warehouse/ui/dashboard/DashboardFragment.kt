@@ -4,13 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.navi_warehouse.Database.ItemAdapter
 import com.example.navi_warehouse.databinding.FragmentDashboardBinding
-import androidx.recyclerview.widget.RecyclerView
 
 class DashboardFragment : Fragment() {
 
@@ -31,7 +29,6 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Pass context to the ItemAdapter constructor
         itemAdapter = ItemAdapter(requireContext())
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -42,8 +39,6 @@ class DashboardFragment : Fragment() {
             itemAdapter.setItems(items)
         }
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()
