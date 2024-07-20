@@ -48,4 +48,9 @@ public abstract class WarehouseDatabase extends RoomDatabase {
         });
         thread.start();
     }
+
+    public static void clearDatabase(Context context) {
+        WarehouseDatabase db = getDatabase(context);
+        db.itemDao().deleteAllItems();
+    }
 }

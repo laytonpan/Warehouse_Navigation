@@ -28,4 +28,8 @@ public interface ItemDao {
     // Method to count the number of items in the database
     @Query("SELECT COUNT(*) FROM items")
     int countItems();
+
+    // Delete all the item in the class
+    @Query("DELETE FROM items")
+    void deleteAllItems();
 }

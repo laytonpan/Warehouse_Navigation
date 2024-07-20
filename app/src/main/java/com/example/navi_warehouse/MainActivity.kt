@@ -3,12 +3,16 @@ package com.example.navi_warehouse
 import android.os.Bundle
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.navi_warehouse.Database.WarehouseDatabase
+import com.example.navi_warehouse.Database.WarehouseDatabase.populateInitialData
 import com.example.navi_warehouse.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,7 +25,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Initialize the database with sample data (For testing)
-        WarehouseDatabase.populateInitialData(applicationContext)
+        lifecycleScope.launch(Dispatchers.IO) {
+            WarehouseDatabase.clearDatabase(applicationContext)
+            populateInitialData(applicationContext)
+        }
 
         val navView: BottomNavigationView = binding.navView
 
