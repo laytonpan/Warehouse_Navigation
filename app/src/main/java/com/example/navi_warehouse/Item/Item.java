@@ -1,4 +1,4 @@
-package com.example.navi_warehouse.Database;
+package com.example.navi_warehouse.Item;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;

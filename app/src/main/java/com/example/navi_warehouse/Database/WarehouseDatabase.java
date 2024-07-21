@@ -4,12 +4,20 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import android.content.Context;
+import androidx.room.TypeConverters;
+
+import com.example.navi_warehouse.Item.Item;
+import com.example.navi_warehouse.Order.Converters;
+import com.example.navi_warehouse.Order.Order;
+import com.example.navi_warehouse.Order.OrderDao;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Database(entities = {Item.class}, version = 1, exportSchema = false)
+@Database(entities = {Item.class, Order.class}, version = 2, exportSchema = false)
+@TypeConverters(Converters.class)
 public abstract class WarehouseDatabase extends RoomDatabase {
+    public abstract OrderDao orderDao();
     public abstract ItemDao itemDao();
 
     private static volatile WarehouseDatabase INSTANCE;
@@ -31,9 +39,10 @@ public abstract class WarehouseDatabase extends RoomDatabase {
     public static void populateInitialData(Context context) {
         Thread thread = new Thread(() -> {
             WarehouseDatabase db = WarehouseDatabase.getDatabase(context);
-            ItemDao dao = db.itemDao();
+            ItemDao itemDao = db.itemDao();
+            OrderDao orderDao = db.orderDao();
 
-            if (dao.countItems() == 0) { // Only populate if the database is empty
+            if (itemDao.countItems() == 0) { // Only populate if the database is empty
                 List<Item> sampleItems = Arrays.asList(
                         new Item(0, "Super Drill", "DRILL_001", 199.99, "Medium", 3.5, "Tools", "Section A"),
                         new Item(0, "Smart Watch", "WATCH_002", 299.99, "Small", 0.1, "Electronics", "Section B"),
@@ -42,7 +51,15 @@ public abstract class WarehouseDatabase extends RoomDatabase {
                 );
 
                 for (Item item : sampleItems) {
-                    dao.insert(item);
+                    itemDao.insert(item);
+                }
+            }
+
+            List<Order> orders = orderDao.getAllOrders().getValue();
+            if (orders == null || orders.isEmpty()) {
+                List<Item> items = itemDao.getAllItems().getValue();
+                if (items != null && !items.isEmpty()) {
+                    orderDao.insertOrder(new Order("Order 1", items));
                 }
             }
         });

@@ -7,6 +7,8 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.example.navi_warehouse.Item.Item;
+
 import java.util.List;
 @Dao
 public interface ItemDao {
