@@ -27,12 +27,14 @@ public class Item {
     @ColumnInfo(name = "category")
     private String category;
 
-    @ColumnInfo(name = "location_id")
-    private String locationId;
+    @ColumnInfo(name = "location_x")
+    public int locationX;
 
+    @ColumnInfo(name = "location_y")
+    public int locationY;
 
     // Constructors, Getters and Setters
-    public Item(int id, String name, String codeName, double price, String size, double weight, String category, String locationId) {
+    public Item(int id, String name, String codeName, double price, String size, double weight, String category, int locationX, int locationY) {
         this.id = id;
         this.name = name;
         this.codeName = codeName;
@@ -40,8 +42,11 @@ public class Item {
         this.size = size;
         this.weight = weight;
         this.category = category;
-        this.locationId = locationId;
+        this.locationX = locationX;
+        this.locationY = locationY;
     }
+
+
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -57,7 +62,10 @@ public class Item {
     public void setWeight(double weight) { this.weight = weight; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
-    public String getLocationId() { return locationId; }
-    public void setLocationId(String locationId) { this.locationId = locationId; }
+
+    public int getLocationX() { return locationX; }
+    public void setLocationX() {this.locationX = locationX; }
+    public int getLocationY() { return locationY; }
+    public void setLocationY() {this.locationY = locationY; }
 
 }

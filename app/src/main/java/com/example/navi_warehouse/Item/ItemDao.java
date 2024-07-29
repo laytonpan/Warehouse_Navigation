@@ -1,4 +1,4 @@
-package com.example.navi_warehouse.Database;
+package com.example.navi_warehouse.Item;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -6,8 +6,6 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-
-import com.example.navi_warehouse.Item.Item;
 
 import java.util.List;
 @Dao
