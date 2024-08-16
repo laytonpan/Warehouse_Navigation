@@ -74,4 +74,7 @@ dependencies {
     // Google Map SDK
     implementation ("com.google.android.gms:play-services-maps:19.0.0")
 
+    // SVG
+    implementation ("com.caverock:androidsvg:1.4")
+
 }

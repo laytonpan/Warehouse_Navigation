@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1200"
+   height="800"
+   version="1.1"
+   id="svg86"
+   sodipodi:docname="warehouse_map.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+  <metadata
+     id="metadata92">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs90" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="3440"
+     inkscape:window-height="1351"
+     id="namedview88"
+     showgrid="false"
+     inkscape:zoom="0.834386"
+     inkscape:cx="964.3986"
+     inkscape:cy="374.72962"
+     inkscape:window-x="3831"
+     inkscape:window-y="330"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg86" />
+  <!-- Define warehouse layout -->
+  <!-- Shelves -->
+  <rect
+     x="50"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect2" />
+  <rect
+     x="200"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect4" />
+  <rect
+     x="350"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect6" />
+  <rect
+     x="500"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect8" />
+  <rect
+     x="650"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect10" />
+  <rect
+     x="800"
+     y="50"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect12" />
+  <!-- Additional Shelves -->
+  <rect
+     x="50"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect14" />
+  <rect
+     x="200"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect16" />
+  <rect
+     x="350"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect18" />
+  <rect
+     x="500"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect20" />
+  <rect
+     x="650"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect22" />
+  <rect
+     x="800"
+     y="400"
+     width="100"
+     height="300"
+     fill="lightblue"
+     stroke="black"
+     stroke-width="2"
+     id="rect24" />
+  <!-- Aisles between shelves -->
+  <!-- Aisles between additional shelves -->
+  <!-- Horizontal Aisles -->
+  <rect
+     x="50"
+     y="370"
+     width="1000"
+     height="20"
+     fill="lightgray"
+     stroke="black"
+     stroke-width="2"
+     id="rect50" />
+  <rect
+     x="50"
+     y="710"
+     width="1000"
+     height="20"
+     fill="lightgray"
+     stroke="black"
+     stroke-width="2"
+     id="rect52" />
+  <!-- Entrance -->
+  <rect
+     x="1050"
+     y="50"
+     width="100"
+     height="50"
+     fill="lightgreen"
+     stroke="black"
+     stroke-width="2"
+     id="rect54" />
+  <!-- Labels -->
+  <text
+     x="75"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text56">Shelf 1</text>
+  <text
+     x="225"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text58">Shelf 2</text>
+  <text
+     x="375"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text60">Shelf 3</text>
+  <text
+     x="525"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text62">Shelf 4</text>
+  <text
+     x="675"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text64">Shelf 5</text>
+  <text
+     x="825"
+     y="200"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text66">Shelf 6</text>
+  <text
+     x="75"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text68">Shelf 7</text>
+  <text
+     x="225"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text70">Shelf 8</text>
+  <text
+     x="375"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text72">Shelf 9</text>
+  <text
+     x="525"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text74">Shelf 10</text>
+  <text
+     x="675"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text76">Shelf 11</text>
+  <text
+     x="825"
+     y="550"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text78">Shelf 12</text>
+  <text
+     x="525"
+     y="395"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text80">Aisle</text>
+  <text
+     x="525"
+     y="735"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text82">Aisle</text>
+  <text
+     x="1075"
+     y="75"
+     font-family="Verdana"
+     font-size="20"
+     fill="black"
+     id="text84">Entrance</text>
+</svg>

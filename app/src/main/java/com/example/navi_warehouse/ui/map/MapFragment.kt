@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.navi_warehouse.R
 import com.example.navi_warehouse.Item.Item
+import com.example.navi_warehouse.databinding.FragmentMapBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -14,39 +15,42 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
+
 class MapFragment : Fragment(), OnMapReadyCallback {
 
+    private var _binding: FragmentMapBinding? = null
+    private val binding get() = _binding!!
     private lateinit var map: GoogleMap
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
+    ): View {
+        _binding = FragmentMapBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        return view
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        // show item position
-        val items = listOf(
-            Item(0, "Super Drill", "DRILL_001", 199.99, "Medium", 3.5, "Tools", 10, 20),
-            Item(0, "Smart Watch", "WATCH_002", 299.99, "Small", 0.1, "Electronics", 15, 25)
-        )
+        // 设置初始位置和缩放级别
+        val warehouseLocation = LatLng(-34.0, 151.0) // 替换为你的仓库位置
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(warehouseLocation, 15f))
 
-        for (item in items) {
-            val position = LatLng(item.locationX.toDouble(), item.locationY.toDouble())
-            map.addMarker(MarkerOptions().position(position).title(item.name))
-        }
+        // 添加标记
+        map.addMarker(MarkerOptions().position(warehouseLocation).title("Warehouse"))
 
-        // Move the camera to the first item
-        if (items.isNotEmpty()) {
-            val firstItemPosition = LatLng(items[0].locationX.toDouble(), items[0].locationY.toDouble())
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(firstItemPosition, 15f))
-        }
+        // 其他地图设置
+        map.uiSettings.isZoomControlsEnabled = true
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
