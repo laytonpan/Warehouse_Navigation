@@ -23,10 +23,12 @@ public class WarehouseMapParser {
 
     public static class MapElement {
         public String id;
+        public String type;
         public float x, y, width, height;
 
-        public MapElement(String id, float x, float y, float width, float height) {
+        public MapElement(String id, String type, float x, float y, float width, float height) {
             this.id = id;
+            this.type = type;
             this.x = x;
             this.y = y;
             this.width = width;
@@ -52,16 +54,14 @@ public class WarehouseMapParser {
             // Element for rect
             if (name.equals("rect")) {
                 String id = parser.getAttributeValue(null, "id");
+                String type = parser.getAttributeValue(null, "data-type");
                 float x = Float.parseFloat(parser.getAttributeValue(null, "x"));
                 float y = Float.parseFloat(parser.getAttributeValue(null, "y"));
                 float width = Float.parseFloat(parser.getAttributeValue(null, "width"));
                 float height = Float.parseFloat(parser.getAttributeValue(null, "height"));
 
-                elements.add(new MapElement(id, x, y, width, height));
+                elements.add(new MapElement(id, type, x, y, width, height));
             }
-
-
-            // Element for path
         }
 
         return elements;
