@@ -1,56 +1,40 @@
 package com.example.navi_warehouse.ui.map
 
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.navi_warehouse.Map.CustomMapView
+import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.R
-import com.example.navi_warehouse.Item.Item
-import com.example.navi_warehouse.databinding.FragmentMapBinding
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
 
-
-class MapFragment : Fragment(), OnMapReadyCallback {
-
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var map: GoogleMap
+class MapFragment : Fragment() {
+    private var warehouseMapModel: WarehouseMapModel? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMapBinding.inflate(inflater, container, false)
-        return binding.root
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+
+        // Create a simple warehouse map model using WarehouseMapExample
+        warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(30)
+
+        // Draw the warehouse map on the view
+        val mapView: CustomMapView = view.findViewById(R.id.custom_map_view)
+        mapView.setWarehouseMapModel(warehouseMapModel)
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-
-        // 设置初始位置和缩放级别
-        val warehouseLocation = LatLng(-34.0, 151.0) // 替换为你的仓库位置
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(warehouseLocation, 15f))
-
-        // 添加标记
-        map.addMarker(MarkerOptions().position(warehouseLocation).title("Warehouse"))
-
-        // 其他地图设置
-        map.uiSettings.isZoomControlsEnabled = true
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }
