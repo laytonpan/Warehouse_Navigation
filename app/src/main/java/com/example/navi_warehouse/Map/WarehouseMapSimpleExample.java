@@ -4,28 +4,42 @@ public class WarehouseMapSimpleExample {
     public static WarehouseMapModel createSimpleMap(int scaler) {
         WarehouseMapModel mapModel = new WarehouseMapModel();
 
-        // Add nodes (e.g., shelves and aisles) with scaled positions
-        mapModel.addNode("Entrance", 0 * scaler, 0 * scaler); // Warehouse entrance
-        mapModel.addNode("Shelf1", 2 * scaler, 1 * scaler); // Shelf 1
-        mapModel.addNode("Shelf2", 5 * scaler, 1 * scaler); // Shelf 2
-        mapModel.addNode("Aisle1", 3 * scaler, 3 * scaler); // Aisle 1
-        mapModel.addNode("Shelf3", 6 * scaler, 5 * scaler); // Shelf 3
+        // Add nodes (Shelves and key points) with larger spacing
+        mapModel.addNode("Entrance", 0 * scaler, 0 * scaler);   // Entrance
+        mapModel.addNode("Shelf1", 3 * scaler, 1 * scaler);    // Shelf 1
+        mapModel.addNode("Shelf2", 6 * scaler, 1 * scaler);    // Shelf 2
+        mapModel.addNode("Shelf3", 9 * scaler, 1 * scaler);    // Shelf 3
+        mapModel.addNode("Shelf4", 3 * scaler, 5 * scaler);    // Shelf 4
+        mapModel.addNode("Shelf5", 6 * scaler, 5 * scaler);    // Shelf 5
+        mapModel.addNode("Shelf6", 9 * scaler, 5 * scaler);    // Shelf 6
+        mapModel.addNode("Shelf7", 3 * scaler, 9 * scaler);    // Shelf 7
+        mapModel.addNode("Shelf8", 6 * scaler, 9 * scaler);    // Shelf 8
+        mapModel.addNode("Shelf9", 9 * scaler, 9 * scaler);    // Shelf 9
+        mapModel.addNode("Exit", 12 * scaler, 10 * scaler);    // Exit
 
-        // Add edges (paths) representing connections between nodes and their distances
-        mapModel.addEdge("Entrance", "Shelf1", 2 * scaler); // Distance from entrance to Shelf 1 is scaled
-        mapModel.addEdge("Shelf1", "Shelf2", 3 * scaler); // Distance from Shelf 1 to Shelf 2 is scaled
-        mapModel.addEdge("Shelf2", "Aisle1", 3 * scaler); // Distance from Shelf 2 to Aisle 1 is scaled
-        mapModel.addEdge("Aisle1", "Shelf3", 4 * scaler); // Distance from Aisle 1 to Shelf 3 is scaled
-        mapModel.addEdge("Shelf1", "Aisle1", 2 * scaler); // Distance from Shelf 1 to Aisle 1 is scaled
+        // Add paths connecting the shelves and other nodes
+        mapModel.addEdge("Entrance", "Shelf1", 3 * scaler);    // Entrance to Shelf 1
+        mapModel.addEdge("Shelf1", "Shelf2", 3 * scaler);      // Shelf 1 to Shelf 2
+        mapModel.addEdge("Shelf2", "Shelf3", 3 * scaler);      // Shelf 2 to Shelf 3
+        mapModel.addEdge("Shelf1", "Shelf4", 4 * scaler);      // Shelf 1 to Shelf 4
+        mapModel.addEdge("Shelf2", "Shelf5", 4 * scaler);      // Shelf 2 to Shelf 5
+        mapModel.addEdge("Shelf3", "Shelf6", 4 * scaler);      // Shelf 3 to Shelf 6
+        mapModel.addEdge("Shelf4", "Shelf5", 3 * scaler);      // Shelf 4 to Shelf 5
+        mapModel.addEdge("Shelf5", "Shelf6", 3 * scaler);      // Shelf 5 to Shelf 6
+        mapModel.addEdge("Shelf4", "Shelf7", 4 * scaler);      // Shelf 4 to Shelf 7
+        mapModel.addEdge("Shelf5", "Shelf8", 4 * scaler);      // Shelf 5 to Shelf 8
+        mapModel.addEdge("Shelf6", "Shelf9", 4 * scaler);      // Shelf 6 to Shelf 9
+        mapModel.addEdge("Shelf7", "Shelf8", 3 * scaler);      // Shelf 7 to Shelf 8
+        mapModel.addEdge("Shelf8", "Shelf9", 3 * scaler);      // Shelf 8 to Shelf 9
+        mapModel.addEdge("Shelf9", "Exit", 3 * scaler);        // Shelf 9 to Exit
 
-
-        return mapModel; // Return the constructed warehouse map model
+        return mapModel;
     }
 
     public static float getDefaultScaler(float canvasWidth, float canvasHeight) {
         // Define base dimensions of the map (before scaling)
-        float baseWidth = 7; // Maximum x-coordinate in the original map
-        float baseHeight = 5; // Maximum y-coordinate in the original map
+        float baseWidth = 10; // Maximum x-coordinate in the original map
+        float baseHeight = 6; // Maximum y-coordinate in the original map
 
         // Calculate the scaling factor based on the canvas dimensions
         float scaleX = canvasWidth / (baseWidth + 2); // Add padding for better visibility
@@ -34,4 +48,3 @@ public class WarehouseMapSimpleExample {
         return Math.min(scaleX, scaleY); // Use the smaller scaling factor to fit the map on screen
     }
 }
-

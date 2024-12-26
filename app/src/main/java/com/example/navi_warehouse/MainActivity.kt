@@ -10,18 +10,22 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.navi_warehouse.Database.WarehouseDatabase
 import com.example.navi_warehouse.Database.WarehouseDatabase.populateInitialData
+import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.Map.WarehouseMapParser
+import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
 import com.example.navi_warehouse.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
+import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private var warehouseMapModel: WarehouseMapModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,39 +42,33 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = binding.navView
 
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications, R.id.mapFragment
+                R.id.navigation_home,
+                R.id.navigation_dashboard,
+                R.id.navigation_notifications,
+                R.id.mapFragment
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-
-        val parser = WarehouseMapParser()
-
-        try {
-
-            val elements = parser.parseSvg(this, R.raw.warehouse_map)
-
-            for (element in elements) {
-                Log.d(
-                    "WarehouseMap", "Element ID: " + element.id +
-                            ", x: " + element.x +
-                            ", y: " + element.y +
-                            ", width: " + element.width +
-                            ", height: " + element.height
-                )
-            }
-        } catch (e: XmlPullParserException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
+        // Load the WarehouseMapModel
+        loadWarehouseMapModel()
     }
 
+    private fun loadWarehouseMapModel() {
+        Executors.newSingleThreadExecutor().execute {
+            // Dynamically generate the map model using the WarehouseMapSimpleExample
+            warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(300)
+            Log.d("MainActivity", "Warehouse map model initialized!")
+        }
+    }
 
+    fun getWarehouseMapModel(): WarehouseMapModel? {
+        return warehouseMapModel
+    }
 }
+
+
+
