@@ -69,8 +69,8 @@ public class CustomMapView extends View {
             // Calculate scaling and offset
             float maxX = 0, maxY = 0;
             for (Node node : warehouseMapModel.getNodes().values()) {
-                if (node.x > maxX) maxX = node.x;
-                if (node.y > maxY) maxY = node.y;
+                if (node.x > maxX) maxX = (float) node.x;
+                if (node.y > maxY) maxY = (float) node.y;
             }
 
             float canvasWidth = canvas.getWidth();
@@ -83,8 +83,8 @@ public class CustomMapView extends View {
 
             // Draw nodes (shelves, entrance, exit)
             for (Node node : warehouseMapModel.getNodes().values()) {
-                float rectX = offsetX + node.x * scale;
-                float rectY = offsetY + node.y * scale;
+                float rectX = (float) (offsetX + node.x * scale);
+                float rectY = (float) (offsetY + node.y * scale);
 
                 if (node.id.equals("Entrance")) {
                     // Entrance: Green rectangle
@@ -139,8 +139,8 @@ public class CustomMapView extends View {
                 for (Map.Entry<Node, Integer> neighborEntry : node.neighbors.entrySet()) {
                     Node neighbor = neighborEntry.getKey();
                     canvas.drawLine(
-                            offsetX + node.x * scale, offsetY + node.y * scale,
-                            offsetX + neighbor.x * scale, offsetY + neighbor.y * scale,
+                            (float) (offsetX + node.x * scale), (float) (offsetY + node.y * scale),
+                            (float) (offsetX + neighbor.x * scale), (float) (offsetY + neighbor.y * scale),
                             paint
                     );
                 }
@@ -155,8 +155,8 @@ public class CustomMapView extends View {
                 for (Node node : navigationPath) {
                     if (prev != null) {
                         canvas.drawLine(
-                                offsetX + prev.x * scale, offsetY + prev.y * scale,
-                                offsetX + node.x * scale, offsetY + node.y * scale,
+                                (float) (offsetX + prev.x * scale), (float) (offsetY + prev.y * scale),
+                                (float) (offsetX + node.x * scale), (float) (offsetY + node.y * scale),
                                 paint
                         );
                     }

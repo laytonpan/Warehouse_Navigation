@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey;
 import com.example.navi_warehouse.Item.Item;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity(tableName = "orders")
 public class Order {
@@ -34,5 +35,12 @@ public class Order {
 
     public List<Item> getItems() {
         return items;
+    }
+
+    public List<Integer> getShelfIds() {
+        return items.stream()
+                .map(Item::getShelfId) // Extract shelfId from each item
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

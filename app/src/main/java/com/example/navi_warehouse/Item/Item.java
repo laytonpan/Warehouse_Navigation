@@ -27,14 +27,18 @@ public class Item {
     @ColumnInfo(name = "category")
     private String category;
 
-    @ColumnInfo(name = "location_x")
-    public int locationX;
+    @ColumnInfo(name = "shelf_id")
+    private int shelfId; // Foreign key to Shelf table
 
-    @ColumnInfo(name = "location_y")
-    public int locationY;
+    @ColumnInfo(name = "row_position")
+    private int row_position; // Row position in the shelf
 
-    // Constructors, Getters and Setters
-    public Item(int id, String name, String codeName, double price, String size, double weight, String category, int locationX, int locationY) {
+    @ColumnInfo(name = "column_position")
+    private int column_position; // Column position in the shelf
+
+    // Updated Constructor
+    public Item(int id, String name, String codeName, double price, String size, double weight,
+                String category, int shelfId, int row_position, int column_position) {
         this.id = id;
         this.name = name;
         this.codeName = codeName;
@@ -42,30 +46,41 @@ public class Item {
         this.size = size;
         this.weight = weight;
         this.category = category;
-        this.locationX = locationX;
-        this.locationY = locationY;
+        this.shelfId = shelfId;
+        this.row_position = row_position;
+        this.column_position = column_position;
     }
 
-
-
+    // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
     public String getCodeName() { return codeName; }
     public void setCodeName(String codeName) { this.codeName = codeName; }
+
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
+
     public String getSize() { return size; }
     public void setSize(String size) { this.size = size; }
+
     public double getWeight() { return weight; }
     public void setWeight(double weight) { this.weight = weight; }
+
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
-    public int getLocationX() { return locationX; }
-    public void setLocationX() {this.locationX = locationX; }
-    public int getLocationY() { return locationY; }
-    public void setLocationY() {this.locationY = locationY; }
+    public int getShelfId() { return shelfId; }
+    public void setShelfId(int shelfId) { this.shelfId = shelfId; }
+
+    public int getRow_position() { return row_position; }
+    public void setRow_position(int row_position) { this.row_position = row_position; }
+
+    public int getColumn_position() { return column_position; }
+    public void setColumn_position(int column_position) { this.column_position = column_position; }
 
 }
+
