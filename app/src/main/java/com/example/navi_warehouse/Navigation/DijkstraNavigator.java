@@ -1,3 +1,4 @@
+// DijkstraNavigator.java
 package com.example.navi_warehouse.Navigation;
 
 import com.example.navi_warehouse.Map.WarehouseMapModel;
@@ -56,9 +57,6 @@ public class DijkstraNavigator {
         return resultPath;
     }
 
-
-
-
     /**
      * Calculates the shortest path between two nodes using Dijkstra's algorithm.
      *
@@ -75,14 +73,11 @@ public class DijkstraNavigator {
         Set<WarehouseMapModel.Node> visited = new HashSet<>();
 
         // Initialize distances
-        for (WarehouseMapModel.Node node : start.neighbors.keySet()) {
-            distances.put(node, Double.POSITIVE_INFINITY);
-        }
         distances.put(start, 0.0);
         queue.add(new WarehouseMapModel.NodeDistance(start, 0.0));
 
         while (!queue.isEmpty()) {
-            NodeDistance current = queue.poll();
+            WarehouseMapModel.NodeDistance current = queue.poll();
             if (visited.contains(current.node)) continue;
             visited.add(current.node);
 
@@ -100,19 +95,21 @@ public class DijkstraNavigator {
             }
         }
 
-        // Reconstruct path
-        List<WarehouseMapModel.Node> path = new ArrayList<>();
-        for (WarehouseMapModel.Node at = target; at != null; at = previous.get(at)) {
-            path.add(0, at);
-        }
-
-        if (path.get(0).equals(start)) {
-            return path;
-        } else {
+        // ✅ Fix: Check if target is unreachable
+        if (!previous.containsKey(target) && !start.equals(target)) {
             return Collections.emptyList();
         }
-    }
 
+        // ✅ Reconstruct the path from target to start
+        List<WarehouseMapModel.Node> path = new ArrayList<>();
+        WarehouseMapModel.Node current = target;
+        while (current != null) {
+            path.add(0, current);
+            current = previous.get(current);
+        }
+
+        return path;
+    }
 
     /**
      * Calculates the total distance of a given path.
@@ -132,4 +129,3 @@ public class DijkstraNavigator {
         return totalDistance;
     }
 }
-

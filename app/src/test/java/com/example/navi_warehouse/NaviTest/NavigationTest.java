@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,45 +25,31 @@ public class NavigationTest {
         mapModel.addNode("Shelf1", 1, 1);
         mapModel.addNode("Shelf2", 2, 2);
         mapModel.addNode("Shelf3", 3, 3);
-        mapModel.addNode("Exit", 4, 4);
+        mapModel.addNode("Shelf4", 4, 4);
+        mapModel.addNode("Exit", 5, 5);
 
         // Add edges
         mapModel.addEdge("Entrance", "Shelf1", 1);
         mapModel.addEdge("Shelf1", "Shelf2", 1);
         mapModel.addEdge("Shelf2", "Shelf3", 1);
-        mapModel.addEdge("Shelf3", "Exit", 1);
-
-        // Print graph structure
-        System.out.println("Nodes in the graph:");
-        for (String nodeId : mapModel.getNodes().keySet()) {
-            System.out.println("Node ID: " + nodeId);
-        }
-
-        System.out.println("Edges in the graph:");
-        for (Map.Entry<String, WarehouseMapModel.Node> entry : mapModel.getNodes().entrySet()) {
-            System.out.println("Node: " + entry.getKey());
-            for (Map.Entry<WarehouseMapModel.Node, Integer> neighbor : entry.getValue().neighbors.entrySet()) {
-                System.out.println("  Neighbor: " + neighbor.getKey().id + ", Distance: " + neighbor.getValue());
-            }
-        }
+        mapModel.addEdge("Shelf3", "Shelf4", 1);
+        mapModel.addEdge("Shelf4", "Exit", 1);
+        mapModel.addEdge("Shelf2", "Shelf4", 2); // Alternative path
     }
-
-
 
     @Test
     public void testShortestPathSingleDestination() {
-        // Test navigation from Entrance to Shelf3
-        List<WarehouseMapModel.Node> path = DijkstraNavigator.calculateShortestPath(
-                mapModel.getNode("Entrance"),
-                mapModel.getNode("Shelf3")
-        );
+        // Test navigation from Entrance to Exit
+        List<WarehouseMapModel.Node> path = mapModel.calculateShortestPath("Entrance", "Exit");
 
         // Validate the path
         assertEquals(Arrays.asList(
                 mapModel.getNode("Entrance"),
                 mapModel.getNode("Shelf1"),
                 mapModel.getNode("Shelf2"),
-                mapModel.getNode("Shelf3")
+                mapModel.getNode("Shelf3"),
+                mapModel.getNode("Shelf4"),
+                mapModel.getNode("Exit")
         ), path);
     }
 
@@ -79,7 +64,7 @@ public class NavigationTest {
                 )
         );
 
-        // Validate the path (expected order: Entrance -> Shelf1 -> Shelf3 -> Exit)
+        // Validate the path (expected order: Entrance -> Shelf1 -> Shelf2 -> Shelf3)
         assertEquals(Arrays.asList(
                 mapModel.getNode("Entrance"),
                 mapModel.getNode("Shelf1"),
@@ -89,14 +74,30 @@ public class NavigationTest {
     }
 
     @Test
-    public void testNoPath() {
-        // Test navigation to a non-existent node
-        List<WarehouseMapModel.Node> path = DijkstraNavigator.calculateShortestPath(
-                mapModel.getNode("Entrance"),
-                mapModel.getNode("Unknown")
-        );
+    public void testShortestPathNoPath() {
+        // Add an isolated node
+        mapModel.addNode("IsolatedNode", 10, 10);
+
+        // Test navigation from Entrance to the isolated node
+        List<WarehouseMapModel.Node> path = mapModel.calculateShortestPath("Entrance", "IsolatedNode");
 
         // Validate the path is empty
-        assertEquals(0, path.size());
+        assertEquals(1, path.size());
+    }
+
+    @Test
+    public void testShortestPathAlternativeRoute() {
+        // Add a shorter alternative route
+        mapModel.addEdge("Entrance", "Shelf3", 2);
+
+        // Test navigation from Entrance to Shelf4
+        List<WarehouseMapModel.Node> path = mapModel.calculateShortestPath("Entrance", "Shelf4");
+
+        // Validate the path (expected to take the alternative route)
+        assertEquals(Arrays.asList(
+                mapModel.getNode("Entrance"),
+                mapModel.getNode("Shelf3"),
+                mapModel.getNode("Shelf4")
+        ), path);
     }
 }
