@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Navi_Warehouse</string>
-    <string name="title_home">Home</string>
+    <string name="title_order">Order</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="map_bottom_navi">Map</string>
+    <string name="selected_count">Selected: %1$d item(s)</string>
+
 </resources>

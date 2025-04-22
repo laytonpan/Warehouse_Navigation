@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.navi_warehouse.Item.ItemAdapter
+import com.example.navi_warehouse.R
 import com.example.navi_warehouse.databinding.FragmentDashboardBinding
 
 class DashboardFragment : Fragment() {
@@ -16,6 +17,7 @@ class DashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: DashboardViewModel
     private lateinit var itemAdapter: ItemAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -29,17 +31,23 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        itemAdapter =
-            ItemAdapter(requireContext())
+        itemAdapter = ItemAdapter(requireContext())
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = itemAdapter
         }
 
+        // Set up Listener for collected item
+        itemAdapter.setOnSelectionChangedListener { count ->
+            binding.selectedCountText.text = getString(R.string.selected_count, count)
+        }
+
         viewModel.allItems.observe(viewLifecycleOwner) { items ->
             itemAdapter.setItems(items)
         }
+
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

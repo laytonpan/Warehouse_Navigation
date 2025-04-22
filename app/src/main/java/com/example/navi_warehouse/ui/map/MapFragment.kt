@@ -29,12 +29,40 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Create a simple warehouse map model using WarehouseMapExample
+        // Create Map
         warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(30)
-
-        // Draw the warehouse map on the view
         val mapView: CustomMapView = view.findViewById(R.id.custom_map_view)
         mapView.setWarehouseMapModel(warehouseMapModel)
+
+        // Passing routine ID
+        val pathNodeIds = arguments?.getStringArrayList(ARG_PATH_NODE_IDS)
+
+        if (pathNodeIds != null && warehouseMapModel != null) {
+            val pathNodes = pathNodeIds.mapNotNull { id -> warehouseMapModel!!.getNode(id) }
+            mapView.setHighlightedPath(pathNodes) // 高亮路径
+        }
+
+        val simulatedPathIds = listOf("Entrance", "Shelf1", "Shelf2", "Shelf3")
+
+        val simulatedPath = simulatedPathIds.mapNotNull { id ->
+            warehouseMapModel?.getNode(id)
+        }
+
+        val mapView1: CustomMapView = view.findViewById(R.id.custom_map_view)
+        mapView1.setWarehouseMapModel(warehouseMapModel)
+        mapView1.setHighlightedPath(simulatedPath)
+    }
+
+    companion object {
+        private const val ARG_PATH_NODE_IDS = "path_node_ids"
+
+        fun newInstance(pathNodeIds: ArrayList<String>): MapFragment {
+            val fragment = MapFragment()
+            val args = Bundle()
+            args.putStringArrayList(ARG_PATH_NODE_IDS, pathNodeIds)
+            fragment.arguments = args
+            return fragment
+        }
     }
 
 }

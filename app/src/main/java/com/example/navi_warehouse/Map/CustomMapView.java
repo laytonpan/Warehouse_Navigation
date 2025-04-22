@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+
+import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 
 
@@ -14,19 +17,21 @@ import com.example.navi_warehouse.Map.WarehouseMapModel;
 import com.example.navi_warehouse.Map.WarehouseMapModel.Node;
 
 import java.util.Map;
+import java.util.Set;
 
 public class CustomMapView extends View {
 
-    private static final float SHELF_WIDTH = 20f;  // Half-width of a shelf rectangle
-    private static final float SHELF_HEIGHT = 40f; // Half-height of a shelf rectangle
-    private static final float ENTRANCE_EXIT_SIZE = 30f; // Half-size of entrance/exit rectangles
-    private static final float LABEL_OFFSET = 50f; // Distance between labels and rectangles
-    private static final float TEXT_SIZE = 50f;    // Size of the text labels
+    private static final float SHELF_WIDTH = 20f;
+    private static final float SHELF_HEIGHT = 40f;
+    private static final float ENTRANCE_EXIT_SIZE = 30f;
+    private static final float LABEL_OFFSET = 50f;
+    private static final float TEXT_SIZE = 50f;
 
     private WarehouseMapModel warehouseMapModel;
     private Paint paint;
-    private boolean showNavigationPath = false; // Toggle for navigation path
-    private Queue<WarehouseMapModel.Node> navigationPath;
+    private boolean showNavigationPath = false;
+    private Queue<Node> navigationPath;
+    private List<Node> highlightedPath; // ✅ highlighted path support
 
     public CustomMapView(Context context) {
         super(context);
@@ -46,19 +51,36 @@ public class CustomMapView extends View {
 
     public void setWarehouseMapModel(WarehouseMapModel model) {
         this.warehouseMapModel = model;
-        invalidate(); // Redraw the view with the updated model
+        invalidate();
     }
 
-    public void setNavigationPath(Queue<WarehouseMapModel.Node> path) {
+    public void setNavigationPath(Queue<Node> path) {
         this.navigationPath = path;
         this.showNavigationPath = true;
-        invalidate(); // Redraw the view with the updated path
+        invalidate();
     }
 
     public void clearNavigationPath() {
         this.showNavigationPath = false;
         this.navigationPath = null;
-        invalidate(); // Clear and redraw the view
+        invalidate();
+    }
+
+    public void setHighlightedPath(List<Node> path) {
+        this.highlightedPath = path;
+        invalidate();
+    }
+
+    private void drawRectWithLabel(Canvas canvas, float x, float y, float size, int color, String label, float scale) {
+        paint.setColor(color);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(
+                x - size * scale, y - size * scale,
+                x + size * scale, y + size * scale,
+                paint);
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(TEXT_SIZE);
+        canvas.drawText(label, x - (paint.measureText(label) / 2), y - LABEL_OFFSET * scale, paint);
     }
 
     @Override
@@ -66,11 +88,10 @@ public class CustomMapView extends View {
         super.onDraw(canvas);
 
         if (warehouseMapModel != null) {
-            // Calculate scaling and offset
             float maxX = 0, maxY = 0;
             for (Node node : warehouseMapModel.getNodes().values()) {
-                if (node.x > maxX) maxX = (float) node.x;
-                if (node.y > maxY) maxY = (float) node.y;
+                maxX = Math.max(maxX, (float) node.x);
+                maxY = Math.max(maxY, (float) node.y);
             }
 
             float canvasWidth = canvas.getWidth();
@@ -81,86 +102,75 @@ public class CustomMapView extends View {
             float offsetX = (canvasWidth - maxX * scale) / 2;
             float offsetY = (canvasHeight - maxY * scale) / 2;
 
-            // Draw nodes (shelves, entrance, exit)
+            // Draw nodes
             for (Node node : warehouseMapModel.getNodes().values()) {
                 float rectX = (float) (offsetX + node.x * scale);
                 float rectY = (float) (offsetY + node.y * scale);
 
                 if (node.id.equals("Entrance")) {
-                    // Entrance: Green rectangle
-                    paint.setColor(Color.GREEN);
-                    paint.setStyle(Paint.Style.FILL);
-                    canvas.drawRect(
-                            rectX - ENTRANCE_EXIT_SIZE * scale, rectY - ENTRANCE_EXIT_SIZE * scale,
-                            rectX + ENTRANCE_EXIT_SIZE * scale, rectY + ENTRANCE_EXIT_SIZE * scale,
-                            paint
-                    );
-                    paint.setColor(Color.BLACK);
-                    paint.setTextSize(TEXT_SIZE);
-                    canvas.drawText("Entrance", rectX - (paint.measureText("Entrance") / 2),
-                            rectY - LABEL_OFFSET * scale, paint);
-
+                    drawRectWithLabel(canvas, rectX, rectY, ENTRANCE_EXIT_SIZE, Color.GREEN, "Entrance", scale);
                 } else if (node.id.equals("Exit")) {
-                    // Exit: Red rectangle
-                    paint.setColor(Color.RED);
-                    paint.setStyle(Paint.Style.FILL);
-                    canvas.drawRect(
-                            rectX - ENTRANCE_EXIT_SIZE * scale, rectY - ENTRANCE_EXIT_SIZE * scale,
-                            rectX + ENTRANCE_EXIT_SIZE * scale, rectY + ENTRANCE_EXIT_SIZE * scale,
-                            paint
-                    );
-                    paint.setColor(Color.BLACK);
-                    paint.setTextSize(TEXT_SIZE);
-                    canvas.drawText("Exit", rectX - (paint.measureText("Exit") / 2),
-                            rectY - LABEL_OFFSET * scale, paint);
-
+                    drawRectWithLabel(canvas, rectX, rectY, ENTRANCE_EXIT_SIZE, Color.RED, "Exit", scale);
                 } else if (node.id.startsWith("Shelf")) {
-                    // Shelves: Blue rectangles
                     paint.setColor(Color.BLUE);
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawRect(
                             rectX - SHELF_WIDTH * scale, rectY - SHELF_HEIGHT * scale,
                             rectX + SHELF_WIDTH * scale, rectY + SHELF_HEIGHT * scale,
-                            paint
-                    );
+                            paint);
                     paint.setColor(Color.BLACK);
                     paint.setTextSize(TEXT_SIZE);
-                    canvas.drawText(node.id, rectX - (paint.measureText(node.id) / 2),
-                            rectY - LABEL_OFFSET * scale, paint);
+                    canvas.drawText(node.id, rectX - (paint.measureText(node.id) / 2), rectY - LABEL_OFFSET * scale, paint);
                 }
             }
 
-            // Draw warehouse paths
+            // Draw warehouse paths (only once for each edge)
             paint.setColor(Color.GRAY);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(2 * scale);
-
+            Set<String> drawnEdges = new HashSet<>();
             for (Node node : warehouseMapModel.getNodes().values()) {
                 for (Map.Entry<Node, Integer> neighborEntry : node.neighbors.entrySet()) {
                     Node neighbor = neighborEntry.getKey();
-                    canvas.drawLine(
-                            (float) (offsetX + node.x * scale), (float) (offsetY + node.y * scale),
-                            (float) (offsetX + neighbor.x * scale), (float) (offsetY + neighbor.y * scale),
-                            paint
-                    );
+                    String edgeKey = node.id + "-" + neighbor.id;
+                    String reverseKey = neighbor.id + "-" + node.id;
+                    if (!drawnEdges.contains(reverseKey)) {
+                        canvas.drawLine(
+                                (float) (offsetX + node.x * scale), (float) (offsetY + node.y * scale),
+                                (float) (offsetX + neighbor.x * scale), (float) (offsetY + neighbor.y * scale),
+                                paint);
+                        drawnEdges.add(edgeKey);
+                    }
                 }
             }
 
-            // Draw navigation path if enabled
+            // Draw navigation path (Queue)
             if (showNavigationPath && navigationPath != null) {
                 paint.setColor(Color.RED);
                 paint.setStrokeWidth(4 * scale);
-
                 Node prev = null;
                 for (Node node : navigationPath) {
                     if (prev != null) {
                         canvas.drawLine(
                                 (float) (offsetX + prev.x * scale), (float) (offsetY + prev.y * scale),
                                 (float) (offsetX + node.x * scale), (float) (offsetY + node.y * scale),
-                                paint
-                        );
+                                paint);
                     }
                     prev = node;
+                }
+            }
+
+            // Draw highlighted path (List)
+            if (highlightedPath != null && highlightedPath.size() > 1) {
+                paint.setColor(Color.RED);
+                paint.setStrokeWidth(6 * scale);
+                for (int i = 0; i < highlightedPath.size() - 1; i++) {
+                    Node a = highlightedPath.get(i);
+                    Node b = highlightedPath.get(i + 1);
+                    canvas.drawLine(
+                            (float) (offsetX + a.x * scale), (float) (offsetY + a.y * scale),
+                            (float) (offsetX + b.x * scale), (float) (offsetY + b.y * scale),
+                            paint);
                 }
             }
         }

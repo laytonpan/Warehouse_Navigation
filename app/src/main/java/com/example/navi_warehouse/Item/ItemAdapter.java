@@ -4,16 +4,21 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.navi_warehouse.R;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private List<Item> items;
-    private Context context;
+    private final Set<Item> selectedItems = new HashSet<>();
+    private final Context context;
 
     public ItemAdapter(Context context) {
         this.context = context;
@@ -24,9 +29,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         notifyDataSetChanged();
     }
 
+    public List<Item> getSelectedItems() {
+        return new ArrayList<>(selectedItems);
+    }
+
     @Override
     public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
         return new ItemViewHolder(itemView);
     }
@@ -36,6 +44,22 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         Item item = items.get(position);
         holder.nameTextView.setText(item.getName());
         holder.priceTextView.setText(String.valueOf(item.getPrice()));
+        holder.addToOrderButton.setText(selectedItems.contains(item) ? "✔ Added" : "➕ Add");
+
+        holder.addToOrderButton.setOnClickListener(v -> {
+            if (selectedItems.contains(item)) {
+                selectedItems.remove(item);
+                Toast.makeText(context, "Removed：" + item.getName(), Toast.LENGTH_SHORT).show();
+            } else {
+                selectedItems.add(item);
+                Toast.makeText(context, "Added：" + item.getName(), Toast.LENGTH_SHORT).show();
+            }
+            notifyItemChanged(position);
+
+            if (selectionChangedListener != null) {
+                selectionChangedListener.onSelectionChanged(selectedItems.size());
+            }
+        });
     }
 
     @Override
@@ -46,11 +70,24 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
         public TextView nameTextView;
         public TextView priceTextView;
+        public Button addToOrderButton;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.itemNameTextView);
             priceTextView = itemView.findViewById(R.id.itemPriceTextView);
+            addToOrderButton = itemView.findViewById(R.id.addToOrderButton);
         }
+    }
+
+
+    public interface OnSelectionChangedListener {
+        void onSelectionChanged(int count);
+    }
+
+    private OnSelectionChangedListener selectionChangedListener;
+
+    public void setOnSelectionChangedListener(OnSelectionChangedListener listener) {
+        this.selectionChangedListener = listener;
     }
 }
