@@ -13,12 +13,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import com.example.navi_warehouse.ui.order.OrderFragment;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private List<Item> items;
     private final Set<Item> selectedItems = new HashSet<>();
     private final Context context;
+    private boolean readOnly = false;
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
 
     public ItemAdapter(Context context) {
         this.context = context;
@@ -44,14 +50,21 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         Item item = items.get(position);
         holder.nameTextView.setText(item.getName());
         holder.priceTextView.setText(String.valueOf(item.getPrice()));
-        holder.addToOrderButton.setText(selectedItems.contains(item) ? "✔ Added" : "➕ Add");
+        holder.addToOrderButton.setText(selectedItems.contains(item) ? "✔ ADDED" : "➕ ADD");
+
+        // Only show or enable the button if not read-only
+        holder.addToOrderButton.setVisibility(readOnly ? View.GONE : View.VISIBLE);
 
         holder.addToOrderButton.setOnClickListener(v -> {
+            if (readOnly) return; // Disable interaction if read-only
+
             if (selectedItems.contains(item)) {
                 selectedItems.remove(item);
+                OrderFragment.selectedItems.remove(item);
                 Toast.makeText(context, "Removed：" + item.getName(), Toast.LENGTH_SHORT).show();
             } else {
                 selectedItems.add(item);
+                OrderFragment.selectedItems.add(item);
                 Toast.makeText(context, "Added：" + item.getName(), Toast.LENGTH_SHORT).show();
             }
             notifyItemChanged(position);

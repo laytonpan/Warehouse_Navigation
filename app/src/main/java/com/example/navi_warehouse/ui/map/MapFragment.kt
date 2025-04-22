@@ -42,15 +42,6 @@ class MapFragment : Fragment() {
             mapView.setHighlightedPath(pathNodes) // 高亮路径
         }
 
-        val simulatedPathIds = listOf("Entrance", "Shelf1", "Shelf2", "Shelf3")
-
-        val simulatedPath = simulatedPathIds.mapNotNull { id ->
-            warehouseMapModel?.getNode(id)
-        }
-
-        val mapView1: CustomMapView = view.findViewById(R.id.custom_map_view)
-        mapView1.setWarehouseMapModel(warehouseMapModel)
-        mapView1.setHighlightedPath(simulatedPath)
     }
 
     companion object {
