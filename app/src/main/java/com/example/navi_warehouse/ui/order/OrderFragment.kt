@@ -1,6 +1,7 @@
 package com.example.navi_warehouse.ui.order
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,9 @@ import com.example.navi_warehouse.Navigation.DijkstraNavigator
 import com.example.navi_warehouse.ui.map.MapFragment
 import com.example.navi_warehouse.Order.Order
 import com.example.navi_warehouse.databinding.FragmentOrderBinding
+import androidx.navigation.fragment.findNavController
+import com.example.navi_warehouse.R
+
 
 class OrderFragment : Fragment() {
 
@@ -44,7 +48,6 @@ class OrderFragment : Fragment() {
         binding.orderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.orderRecyclerView.adapter = adapter
 
-
         // Disable selection interactions (view-only mode)
         adapter.setOnSelectionChangedListener(null)
 
@@ -60,13 +63,42 @@ class OrderFragment : Fragment() {
 
             val order = Order("TempOrder", selectedItems)
             val mapModel = WarehouseMapSimpleExample.createSimpleMap(30)
-            val shelfNodes = selectedItems.mapNotNull { item -> mapModel.getNode(item.shelfId.toString()) }
+
+            val start = mapModel.getNode("Entrance")!!
+            val end = mapModel.getNode("Exit")!!
+
+            val shelfNodes = selectedItems.mapNotNull { item ->
+                val nodeId = "Shelf${item.shelfId}"
+                Log.d("OrderFragment", "Mapped shelfId ${item.shelfId} -> nodeId: $nodeId")
+                mapModel.getNode(nodeId)
+            }
+
+            // Include exit as last target for proper path routing
+            val fullTargetList = shelfNodes + end
+
             val path = DijkstraNavigator.calculateShortestPathMultiDestination(
-                mapModel.getNode("Entrance")!!,
-                shelfNodes
+                start,
+                fullTargetList
             )
+
+            val nodeIds = path.map { it.id }
+
+            MapFragment.latestPathIds = nodeIds
+            MapFragment.lastOriginTabId = R.id.navigation_order
+
+            val navView = requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.nav_view)
+            navView.selectedItemId = R.id.mapFragment
+        }
+
+        // Clear order Button
+        binding.clearOrderButton.setOnClickListener {
+            selectedItems.clear()
+            adapter.setItems(selectedItems)
+            binding.orderItemCountText.text = "Total: 0 item(s)"
+            Toast.makeText(requireContext(), "Order cleared!", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -34,17 +34,19 @@ class MapFragment : Fragment() {
         val mapView: CustomMapView = view.findViewById(R.id.custom_map_view)
         mapView.setWarehouseMapModel(warehouseMapModel)
 
-        // Passing routine ID
-        val pathNodeIds = arguments?.getStringArrayList(ARG_PATH_NODE_IDS)
+        // Use latestPathIds instead of arguments
+        val pathNodeIds = latestPathIds
 
         if (pathNodeIds != null && warehouseMapModel != null) {
             val pathNodes = pathNodeIds.mapNotNull { id -> warehouseMapModel!!.getNode(id) }
-            mapView.setHighlightedPath(pathNodes) // 高亮路径
+            mapView.setHighlightedPath(pathNodes) // highlight path
         }
 
     }
 
     companion object {
+        var latestPathIds: List<String>? = null
+        var lastOriginTabId: Int = R.id.navigation_dashboard
         private const val ARG_PATH_NODE_IDS = "path_node_ids"
 
         fun newInstance(pathNodeIds: ArrayList<String>): MapFragment {
