@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.example.navi_warehouse.Map.CustomMapView
 import com.example.navi_warehouse.Map.WarehouseMapModel
@@ -29,20 +30,24 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Create Map
+        // initialize map model
         warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(30)
         val mapView: CustomMapView = view.findViewById(R.id.custom_map_view)
         mapView.setWarehouseMapModel(warehouseMapModel)
 
-        // Use latestPathIds instead of arguments
+        // retrieve path (if any) and set highlight
         val pathNodeIds = latestPathIds
+        val controlPanel = view.findViewById<LinearLayout>(R.id.map_control_container)
 
-        if (pathNodeIds != null && warehouseMapModel != null) {
-            val pathNodes = pathNodeIds.mapNotNull { id -> warehouseMapModel!!.getNode(id) }
-            mapView.setHighlightedPath(pathNodes) // highlight path
+        if (pathNodeIds != null && pathNodeIds.isNotEmpty()) {
+            val pathNodes = pathNodeIds.mapNotNull { id -> warehouseMapModel?.getNode(id) }
+            mapView.setHighlightedPath(pathNodes)
+            controlPanel.visibility = View.VISIBLE
+        } else {
+            controlPanel.visibility = View.GONE
         }
-
     }
+
 
     companion object {
         var latestPathIds: List<String>? = null

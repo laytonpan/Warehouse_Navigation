@@ -96,6 +96,11 @@ class OrderFragment : Fragment() {
             adapter.setItems(selectedItems)
             binding.orderItemCountText.text = "Total: 0 item(s)"
             Toast.makeText(requireContext(), "Order cleared!", Toast.LENGTH_SHORT).show()
+
+            // Clear path in MapFragment
+            MapFragment.latestPathIds = null
+            MapFragment.lastOriginTabId = R.id.navigation_order
+
         }
     }
 
