@@ -30,4 +30,11 @@
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
 
+    <fragment
+        android:id="@+id/navigation_order_history"
+        android:name="com.example.navi_warehouse.ui.orderhistory.OrderHistoryFragment"
+        android:label="Order History"
+        tools:layout="@layout/fragment_order_history" />
+
+
 </navigation>

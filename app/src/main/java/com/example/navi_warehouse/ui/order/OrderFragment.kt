@@ -3,6 +3,9 @@ package com.example.navi_warehouse.ui.order
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -109,4 +112,27 @@ class OrderFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+
+    // Order History
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_order_history, menu)
+    }
+
+    // Jump to order history page
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_order_history -> {
+                findNavController().navigate(R.id.navigation_order_history)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 }
