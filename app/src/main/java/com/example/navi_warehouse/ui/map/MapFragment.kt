@@ -1,20 +1,19 @@
 package com.example.navi_warehouse.ui.map
 
-import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Bundle
-import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.navi_warehouse.Map.CustomMapView
 import com.example.navi_warehouse.Map.WarehouseMapModel
-import com.example.navi_warehouse.R
 import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
+import com.example.navi_warehouse.OrderHistory.CompletedOrder
+import com.example.navi_warehouse.Order.ItemStatus
+import com.example.navi_warehouse.OrderHistory.OrderHistoryManager
+import com.example.navi_warehouse.Order.PickStatus
+import com.example.navi_warehouse.R
 import com.example.navi_warehouse.databinding.FragmentMapBinding
 import com.example.navi_warehouse.ui.order.OrderFragment
 
@@ -25,21 +24,16 @@ class MapFragment : Fragment() {
     private var warehouseMapModel: WarehouseMapModel? = null
 
     companion object {
-        // Stores the list of path node IDs for highlighting
         var latestPathIds: List<String>? = null
-
-        // Stores the originating tab for potential navigation handling
         var lastOriginTabId: Int = R.id.navigation_dashboard
-
-        // Index of the current target in the path list
-        var currentTargetIndex: Int = 1 // Start from the first shelf (skip Entrance)
+        var currentTargetIndex: Int = 1 // skip entrance
+        val pickedItems: MutableList<ItemStatus> = mutableListOf()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout using ViewBinding
         _binding = FragmentMapBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -47,75 +41,104 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ Reset index every time fragment is created
-        currentTargetIndex = 1
-
-        // Initialize map and bind
+        // create map model and bind to view
         warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(30)
-        val mapView: CustomMapView = binding.customMapView
-        mapView.setWarehouseMapModel(warehouseMapModel)
+        binding.customMapView.setWarehouseMapModel(warehouseMapModel)
 
-        // Highlight if path exists
-        val pathNodeIds = latestPathIds
-        if (!pathNodeIds.isNullOrEmpty()) {
-            val pathNodes = pathNodeIds.mapNotNull { id -> warehouseMapModel?.getNode(id) }
-            mapView.setHighlightedPath(pathNodes)
+        // draw path
+        latestPathIds?.let { ids ->
+            val nodes = ids.mapNotNull { warehouseMapModel?.getNode(it) }
+            binding.customMapView.setHighlightedPath(nodes)
             binding.mapControlContainer.visibility = View.VISIBLE
-        } else {
-            // If no path, hide the control area
+        } ?: run {
             binding.mapControlContainer.visibility = View.GONE
         }
 
-        // Show first target
+        // init first target
         updateCurrentTarget()
 
+        // ✅ pick finished button
         binding.pickFinishedButton.setOnClickListener {
-            currentTargetIndex += 1 // Continue to the next item
-            updateCurrentTarget()
+            recordCurrentItem(PickStatus.PICKED)
+            moveToNextTarget()
         }
 
+        // ✅ missed/damaged button
         binding.damagedOrMissedButton.setOnClickListener {
-            currentTargetIndex += 1 // Skip to the next item
-            updateCurrentTarget()
+            recordCurrentItem(PickStatus.MISSED)
+            moveToNextTarget()
         }
     }
 
+    // ⏺ 记录当前拣选物品状态
+    private fun recordCurrentItem(status: PickStatus) {
+        val pathId = latestPathIds?.getOrNull(currentTargetIndex) ?: return
+        val shelfId = pathId.removePrefix("Shelf").toIntOrNull() ?: return
+        val item = OrderFragment.selectedItems.firstOrNull { it.shelfId == shelfId } ?: return
 
-    // Update the label and highlighted path based on the current target index
+        pickedItems.add(ItemStatus(item, status))
+    }
+
+    // Jump to next target or Finished
+    private fun moveToNextTarget() {
+        currentTargetIndex++
+        updateCurrentTarget()
+    }
+
+    // Update target
     private fun updateCurrentTarget() {
         val pathIds = latestPathIds ?: return
-        val index = currentTargetIndex
-
-        if (index in pathIds.indices) {
-            val currentId = pathIds[index]
-
-            // Try to find the corresponding item from the order list
-            val item = OrderFragment.selectedItems
-                .firstOrNull { it.shelfId.toString() == currentId.removePrefix("Shelf") }
-
-            // Format display string
-            val label = if (item != null) {
-                "Current Target: ${item.name} ($currentId)"
-            } else {
-                "Current Target: $currentId"
-            }
-
-            // Update UI label
-            binding.targetInfoText.text = label
-
-            // Show sub-path from previous node to remaining destinations
-            val subPath = pathIds.subList(index - 1, pathIds.size)
-            val nodes = subPath.mapNotNull { warehouseMapModel?.getNode(it) }
-            binding.customMapView.setHighlightedPath(nodes)
-
-        } else {
-            // When all items are picked, display message and hide control panel
-            binding.targetInfoText.text = "All items picked!"
-            binding.mapControlContainer.visibility = View.GONE
+        if (currentTargetIndex >= pathIds.size) {
+            completeOrder()
+            return
         }
+
+        val currentId = pathIds[currentTargetIndex]
+        val shelfId = currentId.removePrefix("Shelf").toIntOrNull()
+        val item = OrderFragment.selectedItems.firstOrNull { it.shelfId == shelfId }
+
+        val label = if (item != null) {
+            "Current Target: ${item.name} ($currentId)"
+        } else {
+            "Current Target: $currentId"
+        }
+        binding.targetInfoText.text = label
+
+        // Highlight the rest routine
+        val remainingNodes = pathIds.subList(currentTargetIndex - 1, pathIds.size)
+            .mapNotNull { warehouseMapModel?.getNode(it) }
+        binding.customMapView.setHighlightedPath(remainingNodes)
+    }
+
+    // Finish pick up
+    private fun completeOrder() {
+
+        // Add to Order History
+        val completedOrder =
+            CompletedOrder(
+                System.currentTimeMillis().toString(),   // id (String)
+                System.currentTimeMillis(),              // timestamp (Long)
+                pickedItems.toList()                     // items (List<ItemStatus>)
+            )
+
+        OrderHistoryManager.addOrder(completedOrder)
+
+        // Clear relevance data
+        pickedItems.clear()
+        OrderFragment.selectedItems.clear()
+        latestPathIds = null
+        currentTargetIndex = 1
+
+        // Hidden bottom control area
+        binding.mapControlContainer.visibility = View.GONE
+        binding.targetInfoText.text = "All items picked!"
+        Toast.makeText(requireContext(), "Order completed!", Toast.LENGTH_SHORT).show()
+
+        Log.d("MapFragment", "Order added. Total history count: ${OrderHistoryManager.getAllOrders().size}")
     }
 
     override fun onDestroyView() {
+
         super.onDestroyView()
         _binding = null
     }

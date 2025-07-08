@@ -1,4 +1,6 @@
-package com.example.navi_warehouse.Order;
+package com.example.navi_warehouse.OrderHistory;
+
+import com.example.navi_warehouse.Order.ItemStatus;
 
 import java.util.List;
 

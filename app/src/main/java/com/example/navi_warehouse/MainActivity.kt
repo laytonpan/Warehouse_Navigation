@@ -7,20 +7,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.example.navi_warehouse.Database.WarehouseDatabase
 import com.example.navi_warehouse.Database.WarehouseDatabase.populateInitialData
 import com.example.navi_warehouse.Map.WarehouseMapModel
-import com.example.navi_warehouse.Map.WarehouseMapParser
 import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
 import com.example.navi_warehouse.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
 import java.util.concurrent.Executors
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,7 +36,11 @@ class MainActivity : AppCompatActivity() {
 
         val navView: BottomNavigationView = binding.navView
 
+        // ✅ Set the toolbar as ActionBar
+        setSupportActionBar(binding.toolbar)
+
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
+
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_order,
@@ -51,7 +50,21 @@ class MainActivity : AppCompatActivity() {
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+
+        // ✅ Custom nav logic to pop back and ensure root fragment for each tab
+        navView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_order,
+                R.id.navigation_dashboard,
+                R.id.navigation_notifications,
+                R.id.mapFragment -> {
+                    navController.popBackStack(item.itemId, false)
+                    navController.navigate(item.itemId)
+                    true
+                }
+                else -> false
+            }
+        }
 
         // Load the WarehouseMapModel
         loadWarehouseMapModel()
@@ -59,7 +72,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadWarehouseMapModel() {
         Executors.newSingleThreadExecutor().execute {
-            // Dynamically generate the map model using the WarehouseMapSimpleExample
             warehouseMapModel = WarehouseMapSimpleExample.createSimpleMap(300)
             Log.d("MainActivity", "Warehouse map model initialized!")
         }
@@ -69,6 +81,3 @@ class MainActivity : AppCompatActivity() {
         return warehouseMapModel
     }
 }
-
-
-
