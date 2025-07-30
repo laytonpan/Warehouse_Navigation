@@ -17,7 +17,6 @@
         android:label="@string/title_order"
         tools:layout="@layout/fragment_order" />
 
-
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.example.navi_warehouse.ui.map.MapFragment"
@@ -35,6 +34,19 @@
         android:name="com.example.navi_warehouse.ui.orderhistory.OrderHistoryFragment"
         android:label="Order History"
         tools:layout="@layout/fragment_order_history" />
+
+    <action
+        android:id="@+id/action_orderHistoryFragment_to_orderDetailFragment"
+        app:destination="@id/orderDetailFragment" />
+
+    <fragment
+        android:id="@+id/orderDetailFragment"
+        android:name="com.example.navi_warehouse.ui.orderhistory.OrderDetailFragment"
+        android:label="Order Detail">
+        <argument
+            android:name="orderId"
+            app:argType="string" />
+    </fragment>
 
 
 </navigation>

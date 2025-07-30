@@ -49,24 +49,24 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         Item item = items.get(position);
         holder.nameTextView.setText(item.getName());
-        holder.priceTextView.setText(String.valueOf(item.getPrice()));
         holder.addToOrderButton.setText(selectedItems.contains(item) ? "✔ ADDED" : "➕ ADD");
 
         // Only show or enable the button if not read-only
         holder.addToOrderButton.setVisibility(readOnly ? View.GONE : View.VISIBLE);
 
         holder.addToOrderButton.setOnClickListener(v -> {
-            if (readOnly) return; // Disable interaction if read-only
+            if (readOnly) return;
 
             if (selectedItems.contains(item)) {
                 selectedItems.remove(item);
                 OrderFragment.selectedItems.remove(item);
-                Toast.makeText(context, "Removed：" + item.getName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Removed: " + item.getName(), Toast.LENGTH_SHORT).show();
             } else {
                 selectedItems.add(item);
                 OrderFragment.selectedItems.add(item);
-                Toast.makeText(context, "Added：" + item.getName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Added: " + item.getName(), Toast.LENGTH_SHORT).show();
             }
+
             notifyItemChanged(position);
 
             if (selectionChangedListener != null) {
@@ -74,6 +74,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             }
         });
     }
+
 
     @Override
     public int getItemCount() {

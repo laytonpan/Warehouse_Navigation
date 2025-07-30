@@ -28,6 +28,7 @@ class MapFragment : Fragment() {
         var lastOriginTabId: Int = R.id.navigation_dashboard
         var currentTargetIndex: Int = 1 // skip entrance
         val pickedItems: MutableList<ItemStatus> = mutableListOf()
+        val shelfVisitCount: MutableMap<Int, Int> = mutableMapOf()
     }
 
     override fun onCreateView(
@@ -57,33 +58,64 @@ class MapFragment : Fragment() {
         // init first target
         updateCurrentTarget()
 
-        // ✅ pick finished button
+        // pick finished button
         binding.pickFinishedButton.setOnClickListener {
             recordCurrentItem(PickStatus.PICKED)
             moveToNextTarget()
         }
 
-        // ✅ missed/damaged button
+        // missed/damaged button
         binding.damagedOrMissedButton.setOnClickListener {
             recordCurrentItem(PickStatus.MISSED)
             moveToNextTarget()
         }
     }
 
-    // ⏺ 记录当前拣选物品状态
     private fun recordCurrentItem(status: PickStatus) {
         val pathId = latestPathIds?.getOrNull(currentTargetIndex) ?: return
         val shelfId = pathId.removePrefix("Shelf").toIntOrNull() ?: return
-        val item = OrderFragment.selectedItems.firstOrNull { it.shelfId == shelfId } ?: return
+
+        val visitIndex = shelfVisitCount.getOrDefault(shelfId, 0)
+        val itemsAtShelf = OrderFragment.selectedItems.filter { it.shelfId == shelfId }
+
+        if (visitIndex >= itemsAtShelf.size) return
+
+        val item = itemsAtShelf[visitIndex]
 
         pickedItems.add(ItemStatus(item, status))
+
+        // Update the visit count for this shelf
+        shelfVisitCount[shelfId] = visitIndex + 1
     }
 
-    // Jump to next target or Finished
+
     private fun moveToNextTarget() {
+        // Get current shelf info
+        val pathIds = latestPathIds ?: return
+        if (currentTargetIndex >= pathIds.size) {
+            completeOrder()
+            return
+        }
+
+        val currentId = pathIds[currentTargetIndex]
+        val shelfId = currentId.removePrefix("Shelf").toIntOrNull()
+
+        if (shelfId != null) {
+            val visitIndex = shelfVisitCount.getOrDefault(shelfId, 0)
+            val itemsAtShelf = OrderFragment.selectedItems.filter { it.shelfId == shelfId }
+
+            // 🛑 If more items on the same shelf, do NOT advance
+            if (visitIndex < itemsAtShelf.size) {
+                updateCurrentTarget()
+                return
+            }
+        }
+
+        // ✅ Otherwise, move to the next target node
         currentTargetIndex++
         updateCurrentTarget()
     }
+
 
     // Update target
     private fun updateCurrentTarget() {
@@ -95,47 +127,81 @@ class MapFragment : Fragment() {
 
         val currentId = pathIds[currentTargetIndex]
         val shelfId = currentId.removePrefix("Shelf").toIntOrNull()
-        val item = OrderFragment.selectedItems.firstOrNull { it.shelfId == shelfId }
+        val visitIndex = shelfId?.let { shelfVisitCount.getOrDefault(it, 0) } ?: 0
 
-        val label = if (item != null) {
-            "Current Target: ${item.name} ($currentId)"
+        val itemsAtShelf = shelfId?.let {
+            OrderFragment.selectedItems.filter { item -> item.shelfId == it }
+        } ?: emptyList()
+
+        // Build target label: either item name or passing notice
+        val label = if (itemsAtShelf.isNotEmpty() && visitIndex < itemsAtShelf.size) {
+            "Current Target: ${itemsAtShelf[visitIndex].name} ($currentId)"
         } else {
-            "Current Target: $currentId"
+            "Passing through: $currentId"
         }
         binding.targetInfoText.text = label
 
-        // Highlight the rest routine
-        val remainingNodes = pathIds.subList(currentTargetIndex - 1, pathIds.size)
+        // Highlight the remaining path
+        val remainingNodes = pathIds.subList(currentTargetIndex, pathIds.size)
             .mapNotNull { warehouseMapModel?.getNode(it) }
         binding.customMapView.setHighlightedPath(remainingNodes)
+
+        // Always show the control buttons, even if no items to pick
+        binding.mapControlContainer.visibility = View.VISIBLE
+
+        val hasItemToPick = itemsAtShelf.isNotEmpty() && visitIndex < itemsAtShelf.size
+
+        // Set button text and state depending on whether picking is needed
+        if (hasItemToPick) {
+            binding.pickFinishedButton.text = "✔ PICK FINISHED"
+            binding.damagedOrMissedButton.text = "✘ DAMAGED / MISSED"
+            binding.pickFinishedButton.isEnabled = true
+            binding.damagedOrMissedButton.isEnabled = true
+        } else {
+            binding.pickFinishedButton.text = "Next"
+            binding.damagedOrMissedButton.text = "Next"
+            binding.pickFinishedButton.isEnabled = true
+            binding.damagedOrMissedButton.isEnabled = true
+        }
     }
+
+
 
     // Finish pick up
     private fun completeOrder() {
-
         // Add to Order History
-        val completedOrder =
-            CompletedOrder(
-                System.currentTimeMillis().toString(),   // id (String)
-                System.currentTimeMillis(),              // timestamp (Long)
-                pickedItems.toList()                     // items (List<ItemStatus>)
-            )
+        val completedOrder = CompletedOrder(
+            System.currentTimeMillis().toString(),   // id (String)
+            System.currentTimeMillis(),              // timestamp (Long)
+            pickedItems.toList()                     // items (List<ItemStatus>)
+        )
 
         OrderHistoryManager.addOrder(completedOrder)
+
+        // 🧪 Log pickedItems for debugging
+        Log.d("MapFragment", "Picked Items:")
+        pickedItems.forEachIndexed { index, itemStatus ->
+            Log.d(
+                "MapFragment",
+                "[$index] ${itemStatus.item.name} - shelf ${itemStatus.item.shelfId} - ${itemStatus.status}"
+            )
+        }
 
         // Clear relevance data
         pickedItems.clear()
         OrderFragment.selectedItems.clear()
         latestPathIds = null
         currentTargetIndex = 1
+        shelfVisitCount.clear()
 
-        // Hidden bottom control area
+        // Hide bottom control area
         binding.mapControlContainer.visibility = View.GONE
         binding.targetInfoText.text = "All items picked!"
         Toast.makeText(requireContext(), "Order completed!", Toast.LENGTH_SHORT).show()
 
         Log.d("MapFragment", "Order added. Total history count: ${OrderHistoryManager.getAllOrders().size}")
     }
+
 
     override fun onDestroyView() {
 

@@ -5,8 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.navi_warehouse.Order.ItemStatus
 import com.example.navi_warehouse.Order.PickStatus
-import com.example.navi_warehouse.databinding.FragmentOrderDetailBinding
-
+import com.example.navi_warehouse.databinding.FragmentOrderDetailListBinding
 
 class OrderDetailAdapter : RecyclerView.Adapter<OrderDetailAdapter.ItemViewHolder>() {
 
@@ -18,7 +17,7 @@ class OrderDetailAdapter : RecyclerView.Adapter<OrderDetailAdapter.ItemViewHolde
         notifyDataSetChanged()
     }
 
-    inner class ItemViewHolder(private val binding: FragmentOrderDetailBinding) :
+    inner class ItemViewHolder(private val binding: FragmentOrderDetailListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemStatus: ItemStatus) {
@@ -36,7 +35,7 @@ class OrderDetailAdapter : RecyclerView.Adapter<OrderDetailAdapter.ItemViewHolde
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val binding = FragmentOrderDetailBinding.inflate(
+        val binding = FragmentOrderDetailListBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false

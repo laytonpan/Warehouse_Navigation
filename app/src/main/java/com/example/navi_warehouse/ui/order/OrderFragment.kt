@@ -19,6 +19,7 @@ import com.example.navi_warehouse.ui.map.MapFragment
 import com.example.navi_warehouse.Order.Order
 import com.example.navi_warehouse.databinding.FragmentOrderBinding
 import androidx.navigation.fragment.findNavController
+import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.R
 
 
@@ -64,33 +65,53 @@ class OrderFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val order = Order("TempOrder", selectedItems)
+            // Create the warehouse map model
             val mapModel = WarehouseMapSimpleExample.createSimpleMap(30)
+            val startNode = mapModel.getNode("Entrance") ?: return@setOnClickListener
+            val exitNode = mapModel.getNode("Exit") ?: return@setOnClickListener
 
-            val start = mapModel.getNode("Entrance")!!
-            val end = mapModel.getNode("Exit")!!
+            // Construct the shelf node sequence from selected items
+            val shelfNodeIds = selectedItems.map { "Shelf${it.shelfId}" }
+            val nodeIdSequence = listOf("Entrance") + shelfNodeIds + listOf("Exit")
 
-            val shelfNodes = selectedItems.mapNotNull { item ->
-                val nodeId = "Shelf${item.shelfId}"
-                Log.d("OrderFragment", "Mapped shelfId ${item.shelfId} -> nodeId: $nodeId")
-                mapModel.getNode(nodeId)
+            val fullPath = mutableListOf<WarehouseMapModel.Node>()
+
+            Log.d("OrderFragment", "=== Generating Full Path ===")
+
+            // Print selected items and their shelfIds
+            selectedItems.forEachIndexed { index, item ->
+                Log.d("OrderFragment", "Item[$index]: ${item.name} (Shelf${item.shelfId})")
             }
 
-            // Include exit as last target for proper path routing
-            val fullTargetList = shelfNodes + end
+            // Print nodeIdSequence for routing
+            Log.d("OrderFragment", "NodeIdSequence (with Entrance and Exit): $nodeIdSequence")
 
-            val path = DijkstraNavigator.calculateShortestPathMultiDestination(
-                start,
-                fullTargetList
-            )
+            for (i in 0 until nodeIdSequence.size - 1) {
+                val from = mapModel.getNode(nodeIdSequence[i])
+                val to = mapModel.getNode(nodeIdSequence[i + 1])
+                if (from != null && to != null) {
+                    val segment = DijkstraNavigator.calculateShortestPath(from, to)
+                    if (fullPath.isNotEmpty() && segment.isNotEmpty()) {
+                        segment.removeFirst() // Avoid duplication of nodes
+                    }
+                    fullPath.addAll(segment)
+                }
+            }
 
-            val nodeIds = path.map { it.id }
+            val nodeIds = fullPath.map { it.id }
 
+            // Set to MapFragment
             MapFragment.latestPathIds = nodeIds
             MapFragment.lastOriginTabId = R.id.navigation_order
 
+            // Navigate to map
             val navView = requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.nav_view)
             navView.selectedItemId = R.id.mapFragment
+
+            Log.d("OrderFragment", "=== Final Full Path ===")
+            fullPath.forEachIndexed { index, node ->
+                Log.d("OrderFragment", "[$index] ${node.id}")
+            }
         }
 
         // Clear order Button

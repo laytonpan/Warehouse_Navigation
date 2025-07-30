@@ -8,13 +8,16 @@
     android:fitsSystemWindows="true">
 
     <!-- Title -->
+    <!-- Title -->
     <TextView
         android:id="@+id/orderTitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Order Summary"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="sans-serif-medium"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -24,8 +27,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Total: 0 item(s)"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:fontFamily="sans-serif"
         app:layout_constraintTop_toBottomOf="@id/orderTitleText"
         app:layout_constraintStart_toStartOf="parent" />
+
 
     <!-- Order List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -43,33 +50,33 @@
         android:id="@+id/pathControlRow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginBottom="56dp"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent">
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <Button
-        android:id="@+id/clearOrderButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="🗑️ Clear Order"
-        android:textAllCaps="false"
-        android:backgroundTint="@color/purple_500"
-        android:textColor="@android:color/white"
-        android:drawableStart="@drawable/ic_launcher_foreground" />
+        <Button
+            android:id="@+id/clearOrderButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/purple_500"
+            android:drawableStart="@drawable/ic_launcher_foreground"
+            android:text="🗑️ Clear Order"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
 
-    <Button
-        android:id="@+id/generatePathButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="🧭 Generate Route"
-        android:textAllCaps="false"
-        android:backgroundTint="@color/purple_500"
-        android:textColor="@android:color/white" />
-</LinearLayout>
+        <Button
+            android:id="@+id/generatePathButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/purple_500"
+            android:layout_marginStart="12dp"
+            android:text="🧭 Generate Route"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
