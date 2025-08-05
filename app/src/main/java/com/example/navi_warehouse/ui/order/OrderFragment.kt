@@ -8,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +21,7 @@ import com.example.navi_warehouse.Order.Order
 import com.example.navi_warehouse.databinding.FragmentOrderBinding
 import androidx.navigation.fragment.findNavController
 import com.example.navi_warehouse.Map.WarehouseMapModel
+import com.example.navi_warehouse.Order.CurrentOrderManager
 import com.example.navi_warehouse.R
 
 
@@ -48,7 +50,7 @@ class OrderFragment : Fragment() {
 
         adapter = ItemAdapter(requireContext())
         adapter.setReadOnly(true) // enable read-only mode for Order page
-        adapter.setItems(selectedItems)
+        adapter.setItemQuantities(getItemQuantityMap(selectedItems))
         binding.orderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.orderRecyclerView.adapter = adapter
 
@@ -56,7 +58,11 @@ class OrderFragment : Fragment() {
         adapter.setOnSelectionChangedListener(null)
 
         // Display item count
-        binding.orderItemCountText.text = "Total: ${selectedItems.size} item(s)"
+        binding.orderItemCountText.text = "Total: ${getItemQuantityMap(selectedItems).values.sum()} item(s)"
+
+        // Display current Order ID
+        val orderId = CurrentOrderManager.getInstance().currentOrder.orderId
+        binding.orderIdTextView.text = "Current Order: $orderId"
 
         // Generate path button
         binding.generatePathButton.setOnClickListener {
@@ -114,24 +120,90 @@ class OrderFragment : Fragment() {
             }
         }
 
-        // Clear order Button
-        binding.clearOrderButton.setOnClickListener {
-            selectedItems.clear()
-            adapter.setItems(selectedItems)
-            binding.orderItemCountText.text = "Total: 0 item(s)"
-            Toast.makeText(requireContext(), "Order cleared!", Toast.LENGTH_SHORT).show()
+        binding.orderActionMenuButton.setOnClickListener { view ->
+            val popup = PopupMenu(requireContext(), view)
+            popup.menuInflater.inflate(R.menu.order_action_menu, popup.menu)
 
-            // Clear path in MapFragment
-            MapFragment.latestPathIds = null
-            MapFragment.lastOriginTabId = R.id.navigation_order
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menu_clear_order -> {
+                        // Clear the selected items list
+                        selectedItems.clear()
 
+                        // Reset all item quantities in the adapter
+                        adapter.setItemQuantities(emptyMap())
+
+                        // Update the total item count text
+                        binding.orderItemCountText.text = "Total: 0 item(s)"
+
+                        // Show confirmation toast
+                        Toast.makeText(requireContext(), "Order cleared!", Toast.LENGTH_SHORT).show()
+
+                        // Clear latest path in MapFragment and set last origin tab
+                        MapFragment.latestPathIds = null
+                        MapFragment.lastOriginTabId = R.id.navigation_order
+
+                        true
+                    }
+
+                    R.id.menu_new_order -> {
+
+                        // After creating a new order
+                        CurrentOrderManager.getInstance().resetOrder()
+                        binding.orderIdTextView.text =
+                            "Current Order: ${CurrentOrderManager.getInstance().currentOrder.orderId}"
+
+                        // Clear selected items and reset quantities
+                        selectedItems.clear()
+                        adapter.setItemQuantities(emptyMap())
+
+                        // Update total item count text with current order size
+                        binding.orderItemCountText.text =
+                            "Total: ${CurrentOrderManager.getInstance().currentOrder.items.size} item(s)"
+
+                        // Reset the latest path state
+                        MapFragment.latestPathIds = null
+                        MapFragment.lastOriginTabId = R.id.navigation_order
+
+                        // Show confirmation toast
+                        Toast.makeText(requireContext(), "New order created!", Toast.LENGTH_SHORT).show()
+
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+            popup.show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val currentOrder = CurrentOrderManager.getInstance().currentOrder
+
+        if (currentOrder.items.isEmpty() && currentOrder.orderId.isBlank()) {
+            // No active order, auto-create one
+            CurrentOrderManager.getInstance().resetOrder()
+        }
+
+        updateOrderIdText()
     }
 
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun getItemQuantityMap(items: List<Item>): Map<Item, Int> {
+        val map = mutableMapOf<Item, Int>()
+        for (item in items) {
+            map[item] = map.getOrDefault(item, 0) + 1
+        }
+        return map
     }
 
 
@@ -154,6 +226,11 @@ class OrderFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun updateOrderIdText() {
+        val orderId = CurrentOrderManager.getInstance().currentOrder.orderId
+        binding.orderIdTextView.text = "Current Order: $orderId"
     }
 
 }

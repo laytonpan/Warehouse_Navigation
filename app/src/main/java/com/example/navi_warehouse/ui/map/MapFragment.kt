@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
+import com.example.navi_warehouse.Order.CurrentOrderManager
 import com.example.navi_warehouse.OrderHistory.CompletedOrder
 import com.example.navi_warehouse.Order.ItemStatus
 import com.example.navi_warehouse.OrderHistory.OrderHistoryManager
@@ -90,8 +91,8 @@ class MapFragment : Fragment() {
 
 
     private fun moveToNextTarget() {
-        // Get current shelf info
         val pathIds = latestPathIds ?: return
+
         if (currentTargetIndex >= pathIds.size) {
             completeOrder()
             return
@@ -104,17 +105,29 @@ class MapFragment : Fragment() {
             val visitIndex = shelfVisitCount.getOrDefault(shelfId, 0)
             val itemsAtShelf = OrderFragment.selectedItems.filter { it.shelfId == shelfId }
 
-            // 🛑 If more items on the same shelf, do NOT advance
+            // Don't move to next if there are still items on the same shelf
             if (visitIndex < itemsAtShelf.size) {
                 updateCurrentTarget()
                 return
             }
         }
 
-        // ✅ Otherwise, move to the next target node
+        // If it's the last target node and no more items to pick, complete the order
+        val isLastTarget = currentTargetIndex == pathIds.lastIndex
+        val nextShelfId = if (isLastTarget) shelfId else {
+            pathIds.getOrNull(currentTargetIndex + 1)?.removePrefix("Shelf")?.toIntOrNull()
+        }
+
         currentTargetIndex++
-        updateCurrentTarget()
+
+        // Check if reached end
+        if (currentTargetIndex >= pathIds.size) {
+            completeOrder()
+        } else {
+            updateCurrentTarget()
+        }
     }
+
 
 
     // Update target
@@ -151,17 +164,17 @@ class MapFragment : Fragment() {
 
         val hasItemToPick = itemsAtShelf.isNotEmpty() && visitIndex < itemsAtShelf.size
 
-        // Set button text and state depending on whether picking is needed
+        val isLastItem = (currentTargetIndex == pathIds.lastIndex) && (visitIndex + 1 >= itemsAtShelf.size) // No more item on current shelf
+
         if (hasItemToPick) {
             binding.pickFinishedButton.text = "✔ PICK FINISHED"
             binding.damagedOrMissedButton.text = "✘ DAMAGED / MISSED"
-            binding.pickFinishedButton.isEnabled = true
-            binding.damagedOrMissedButton.isEnabled = true
+        } else if (isLastItem) {
+            binding.pickFinishedButton.text = "✅ ORDER FINISHED"
+            binding.damagedOrMissedButton.text = "✅ ORDER FINISHED"
         } else {
             binding.pickFinishedButton.text = "Next"
             binding.damagedOrMissedButton.text = "Next"
-            binding.pickFinishedButton.isEnabled = true
-            binding.damagedOrMissedButton.isEnabled = true
         }
     }
 
@@ -199,7 +212,8 @@ class MapFragment : Fragment() {
         binding.targetInfoText.text = "All items picked!"
         Toast.makeText(requireContext(), "Order completed!", Toast.LENGTH_SHORT).show()
 
-        Log.d("MapFragment", "Order added. Total history count: ${OrderHistoryManager.getAllOrders().size}")
+        CurrentOrderManager.getInstance().resetOrder();
+
     }
 
 
