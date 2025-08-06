@@ -8,8 +8,11 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import java.util.List;
-// Updated ItemDao interface to include additional queries
 
+/**
+ * Data Access Object for Item entities.
+ * Queries now use consistent parameter naming matching the Item fields.
+ */
 @Dao
 public interface ItemDao {
 
@@ -34,14 +37,11 @@ public interface ItemDao {
     @Query("DELETE FROM items")
     void deleteAllItems();
 
-    // Added queries for retrieving items by shelf, row, and column
-
-    // Retrieve items by shelf ID, row, and column
-    @Query("SELECT * FROM items WHERE shelf_id = :shelfId AND row_position = :row AND column_position = :column")
-    LiveData<List<Item>> getItemsForPosition(int shelfId, int row, int column);
+    // Retrieve items by shelf ID, row position, and column position
+    @Query("SELECT * FROM items WHERE shelf_id = :shelfId AND row_position = :rowPosition AND column_position = :columnPosition")
+    LiveData<List<Item>> getItemsForPosition(int shelfId, int rowPosition, int columnPosition);
 
     // Retrieve all items in a specific shelf ordered by row and column
     @Query("SELECT * FROM items WHERE shelf_id = :shelfId ORDER BY row_position, column_position")
     LiveData<List<Item>> getAllItemsInShelf(int shelfId);
 }
-

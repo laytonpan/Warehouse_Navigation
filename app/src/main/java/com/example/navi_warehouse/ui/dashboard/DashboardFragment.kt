@@ -1,6 +1,7 @@
 package com.example.navi_warehouse.ui.dashboard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.navi_warehouse.Item.ItemAdapter
+import com.example.navi_warehouse.Order.CurrentOrderManager
 import com.example.navi_warehouse.R
 import com.example.navi_warehouse.databinding.FragmentDashboardBinding
 
@@ -43,14 +45,31 @@ class DashboardFragment : Fragment() {
         }
 
         viewModel.allItems.observe(viewLifecycleOwner) { items ->
-            itemAdapter.setItems(items)
+            val currentOrderItems = CurrentOrderManager.getInstance().currentOrder.items
+            itemAdapter.setItemsWithQuantities(items, currentOrderItems)
         }
 
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        val currentOrder = CurrentOrderManager.getInstance().currentOrder
+        Log.d("DashboardFragment", "onResume - CurrentOrder Items: ${currentOrder.items.joinToString { it.name }}")
+
+        viewModel.allItems.value?.let { allItems ->
+            itemAdapter.setItemsWithQuantities(allItems, currentOrder.items)
+        }
+
+        val totalCount = currentOrder.items.size
+        binding.selectedCountText.text = getString(R.string.selected_count, totalCount)
+
+    }
+
+
 }

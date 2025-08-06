@@ -1,6 +1,7 @@
 package com.example.navi_warehouse.Item;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public void setItems(List<Item> items) {
         this.items = items;
         notifyDataSetChanged();
+
+        Log.d("ItemAdapter", "setItems called, item count = " + items.size());
+
     }
 
     // Set full quantities from outside (used by OrderFragment to initialize with existing selection)
@@ -79,21 +83,21 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.decreaseButton.setEnabled(false);
         }
 
-        // Increase button logic
         holder.increaseButton.setOnClickListener(v -> {
             if (readOnly || !hasActiveOrder()) return;
 
             int currentQty = itemQuantities.getOrDefault(item, 0);
             itemQuantities.put(item, currentQty + 1);
             notifyItemChanged(position);
-            updateOrderFragmentSelectedItems();
+
+            updateGlobalOrderItems();
 
             if (selectionChangedListener != null) {
                 selectionChangedListener.onSelectionChanged(getTotalSelectedCount());
             }
         });
 
-        // Decrease button logic
+
         holder.decreaseButton.setOnClickListener(v -> {
             if (readOnly || !hasActiveOrder()) return;
 
@@ -107,13 +111,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
                     itemQuantities.put(item, newQty);
                 }
                 notifyDataSetChanged();
-                updateOrderFragmentSelectedItems();
+
+                updateGlobalOrderItems();
 
                 if (selectionChangedListener != null) {
                     selectionChangedListener.onSelectionChanged(getTotalSelectedCount());
                 }
             }
         });
+
     }
 
     @Override
@@ -129,7 +135,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
                 result.add(entry.getKey());
             }
         }
-        OrderFragment.selectedItems = result;
+        CurrentOrderManager.getInstance().setItems(result);
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -165,5 +171,49 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         }
         return valid;
     }
+
+
+    public void loadItemsFromOrder(Order order) {
+        Map<Item, Integer> quantityMap = new HashMap<>();
+
+        for (Item item : order.getItems()) {
+            quantityMap.put(item, quantityMap.getOrDefault(item, 0) + 1);
+        }
+
+        this.itemQuantities = quantityMap;
+        this.items = new ArrayList<>(quantityMap.keySet());
+
+        notifyDataSetChanged();
+
+        Log.d("ItemAdapter", "loadItemsFromOrder - quantity map: " + quantityMap);
+
+    }
+
+    private void updateGlobalOrderItems() {
+        List<Item> result = new ArrayList<>();
+        for (Map.Entry<Item, Integer> entry : itemQuantities.entrySet()) {
+            for (int i = 0; i < entry.getValue(); i++) {
+                result.add(entry.getKey());
+            }
+        }
+        CurrentOrderManager.getInstance().getCurrentOrder().items = result;
+    }
+
+    public void setItemsWithQuantities(List<Item> allItems, List<Item> orderItems) {
+        this.items = new ArrayList<>(allItems);
+
+        Map<Item, Integer> quantityMap = new HashMap<>();
+        for (Item item : orderItems) {
+            quantityMap.put(item, quantityMap.getOrDefault(item, 0) + 1);
+        }
+
+        this.itemQuantities = quantityMap;
+        notifyDataSetChanged();
+
+        // Debug
+        Log.d("ItemAdapter", "setItemsWithQuantities: total items = " + items.size() +
+                ", quantities = " + quantityMap.size());
+    }
+
 
 }

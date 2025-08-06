@@ -2,40 +2,27 @@ package com.example.navi_warehouse.ui.order
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.navi_warehouse.Item.Item
 import com.example.navi_warehouse.Item.ItemAdapter
+import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.Map.WarehouseMapSimpleExample
 import com.example.navi_warehouse.Navigation.DijkstraNavigator
-import com.example.navi_warehouse.ui.map.MapFragment
-import com.example.navi_warehouse.Order.Order
-import com.example.navi_warehouse.databinding.FragmentOrderBinding
-import androidx.navigation.fragment.findNavController
-import com.example.navi_warehouse.Map.WarehouseMapModel
 import com.example.navi_warehouse.Order.CurrentOrderManager
 import com.example.navi_warehouse.R
-
+import com.example.navi_warehouse.databinding.FragmentOrderBinding
+import com.example.navi_warehouse.ui.map.MapFragment
 
 class OrderFragment : Fragment() {
 
     private var _binding: FragmentOrderBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: ItemAdapter
-
-    companion object {
-        @JvmField
-        var selectedItems: MutableList<Item> = mutableListOf()
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,48 +36,36 @@ class OrderFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ItemAdapter(requireContext())
-        adapter.setReadOnly(true) // enable read-only mode for Order page
-        adapter.setItemQuantities(getItemQuantityMap(selectedItems))
+        adapter.setReadOnly(true)
+
+        val currentOrder = CurrentOrderManager.getInstance().currentOrder
+        val itemQuantities = getItemQuantityMap(currentOrder.items)
+
+        adapter.setItemQuantities(itemQuantities)
         binding.orderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.orderRecyclerView.adapter = adapter
 
-        // Disable selection interactions (view-only mode)
-        adapter.setOnSelectionChangedListener(null)
+        val totalCount = itemQuantities.values.sum()
+        binding.orderItemCountText.text = "Total: $totalCount item(s)"
 
-        // Display item count
-        binding.orderItemCountText.text = "Total: ${getItemQuantityMap(selectedItems).values.sum()} item(s)"
+        binding.orderIdTextView.text = "Current Order: ${currentOrder.orderId}"
 
-        // Display current Order ID
-        val orderId = CurrentOrderManager.getInstance().currentOrder.orderId
-        binding.orderIdTextView.text = "Current Order: $orderId"
-
-        // Generate path button
         binding.generatePathButton.setOnClickListener {
-            if (selectedItems.isEmpty()) {
+            val items = currentOrder.items
+            if (items.isEmpty()) {
                 Toast.makeText(requireContext(), "No items selected", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Create the warehouse map model
             val mapModel = WarehouseMapSimpleExample.createSimpleMap(30)
-            val startNode = mapModel.getNode("Entrance") ?: return@setOnClickListener
-            val exitNode = mapModel.getNode("Exit") ?: return@setOnClickListener
-
-            // Construct the shelf node sequence from selected items
-            val shelfNodeIds = selectedItems.map { "Shelf${it.shelfId}" }
-            val nodeIdSequence = listOf("Entrance") + shelfNodeIds + listOf("Exit")
-
+            val nodeIdSequence = listOf("Entrance") + items.map { "Shelf${it.shelfId}" } + listOf("Exit")
             val fullPath = mutableListOf<WarehouseMapModel.Node>()
 
             Log.d("OrderFragment", "=== Generating Full Path ===")
-
-            // Print selected items and their shelfIds
-            selectedItems.forEachIndexed { index, item ->
+            items.forEachIndexed { index, item ->
                 Log.d("OrderFragment", "Item[$index]: ${item.name} (Shelf${item.shelfId})")
             }
-
-            // Print nodeIdSequence for routing
-            Log.d("OrderFragment", "NodeIdSequence (with Entrance and Exit): $nodeIdSequence")
+            Log.d("OrderFragment", "NodeIdSequence: $nodeIdSequence")
 
             for (i in 0 until nodeIdSequence.size - 1) {
                 val from = mapModel.getNode(nodeIdSequence[i])
@@ -98,21 +73,16 @@ class OrderFragment : Fragment() {
                 if (from != null && to != null) {
                     val segment = DijkstraNavigator.calculateShortestPath(from, to)
                     if (fullPath.isNotEmpty() && segment.isNotEmpty()) {
-                        segment.removeFirst() // Avoid duplication of nodes
+                        segment.removeFirst()
                     }
                     fullPath.addAll(segment)
                 }
             }
 
-            val nodeIds = fullPath.map { it.id }
-
-            // Set to MapFragment
-            MapFragment.latestPathIds = nodeIds
+            MapFragment.latestPathIds = fullPath.map { it.id }
             MapFragment.lastOriginTabId = R.id.navigation_order
 
-            // Navigate to map
-            val navView = requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.nav_view)
-            navView.selectedItemId = R.id.mapFragment
+            requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.nav_view).selectedItemId = R.id.mapFragment
 
             Log.d("OrderFragment", "=== Final Full Path ===")
             fullPath.forEachIndexed { index, node ->
@@ -127,50 +97,24 @@ class OrderFragment : Fragment() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.menu_clear_order -> {
-                        // Clear the selected items list
-                        selectedItems.clear()
-
-                        // Reset all item quantities in the adapter
+                        CurrentOrderManager.getInstance().setItems(emptyList())
                         adapter.setItemQuantities(emptyMap())
-
-                        // Update the total item count text
                         binding.orderItemCountText.text = "Total: 0 item(s)"
-
-                        // Show confirmation toast
+                        MapFragment.latestPathIds = null
+                        MapFragment.lastOriginTabId = R.id.navigation_order
                         Toast.makeText(requireContext(), "Order cleared!", Toast.LENGTH_SHORT).show()
-
-                        // Clear latest path in MapFragment and set last origin tab
-                        MapFragment.latestPathIds = null
-                        MapFragment.lastOriginTabId = R.id.navigation_order
-
                         true
                     }
-
                     R.id.menu_new_order -> {
-
-                        // After creating a new order
                         CurrentOrderManager.getInstance().resetOrder()
-                        binding.orderIdTextView.text =
-                            "Current Order: ${CurrentOrderManager.getInstance().currentOrder.orderId}"
-
-                        // Clear selected items and reset quantities
-                        selectedItems.clear()
+                        binding.orderIdTextView.text = "Current Order: ${CurrentOrderManager.getInstance().currentOrder.orderId}"
                         adapter.setItemQuantities(emptyMap())
-
-                        // Update total item count text with current order size
-                        binding.orderItemCountText.text =
-                            "Total: ${CurrentOrderManager.getInstance().currentOrder.items.size} item(s)"
-
-                        // Reset the latest path state
+                        binding.orderItemCountText.text = "Total: 0 item(s)"
                         MapFragment.latestPathIds = null
                         MapFragment.lastOriginTabId = R.id.navigation_order
-
-                        // Show confirmation toast
                         Toast.makeText(requireContext(), "New order created!", Toast.LENGTH_SHORT).show()
-
                         true
                     }
-
                     else -> false
                 }
             }
@@ -181,17 +125,16 @@ class OrderFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         val currentOrder = CurrentOrderManager.getInstance().currentOrder
-
         if (currentOrder.items.isEmpty() && currentOrder.orderId.isBlank()) {
-            // No active order, auto-create one
             CurrentOrderManager.getInstance().resetOrder()
         }
-
         updateOrderIdText()
-    }
 
+        Log.d("OrderFragment", "CurrentOrder Items: " +
+                CurrentOrderManager.getInstance().currentOrder.items.joinToString { it.name })
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -206,8 +149,6 @@ class OrderFragment : Fragment() {
         return map
     }
 
-
-    // Order History
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -217,7 +158,6 @@ class OrderFragment : Fragment() {
         inflater.inflate(R.menu.menu_order_history, menu)
     }
 
-    // Jump to order history page
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_order_history -> {
@@ -232,5 +172,4 @@ class OrderFragment : Fragment() {
         val orderId = CurrentOrderManager.getInstance().currentOrder.orderId
         binding.orderIdTextView.text = "Current Order: $orderId"
     }
-
 }

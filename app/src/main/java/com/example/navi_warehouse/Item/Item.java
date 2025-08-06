@@ -3,6 +3,7 @@ package com.example.navi_warehouse.Item;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import java.util.Objects;
 
 @Entity(tableName = "items")
 public class Item {
@@ -31,14 +32,14 @@ public class Item {
     private int shelfId; // Foreign key to Shelf table
 
     @ColumnInfo(name = "row_position")
-    private int row_position; // Row position in the shelf
+    private int rowPosition;
 
     @ColumnInfo(name = "column_position")
-    private int column_position; // Column position in the shelf
+    private int columnPosition;
 
-    // Updated Constructor
+    // Constructor
     public Item(int id, String name, String codeName, double price, String size, double weight,
-                String category, int shelfId, int row_position, int column_position) {
+                String category, int shelfId, int rowPosition, int columnPosition) {
         this.id = id;
         this.name = name;
         this.codeName = codeName;
@@ -47,8 +48,8 @@ public class Item {
         this.weight = weight;
         this.category = category;
         this.shelfId = shelfId;
-        this.row_position = row_position;
-        this.column_position = column_position;
+        this.rowPosition = rowPosition;
+        this.columnPosition = columnPosition;
     }
 
     // Getters and Setters
@@ -76,11 +77,22 @@ public class Item {
     public int getShelfId() { return shelfId; }
     public void setShelfId(int shelfId) { this.shelfId = shelfId; }
 
-    public int getRow_position() { return row_position; }
-    public void setRow_position(int row_position) { this.row_position = row_position; }
+    public int getRowPosition() { return rowPosition; }
+    public void setRowPosition(int rowPosition) { this.rowPosition = rowPosition; }
 
-    public int getColumn_position() { return column_position; }
-    public void setColumn_position(int column_position) { this.column_position = column_position; }
+    public int getColumnPosition() { return columnPosition; }
+    public void setColumnPosition(int columnPosition) { this.columnPosition = columnPosition; }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id == item.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
-
