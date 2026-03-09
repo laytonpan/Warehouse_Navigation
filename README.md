@@ -4,22 +4,18 @@
 
 ## Overview
 
-Navi Warehouse is an Android-based warehouse navigation project that combines:
+Navi Warehouse is an Android-based warehouse navigation project designed to support warehouse picking tasks.  
+It combines item management, order storage, warehouse map logic, and shortest-path route generation in one practical mobile application.
 
-- item management
-- order storage
-- warehouse map logic
-- shortest-path route generation for picking tasks
-
-The app uses Room Database to manage warehouse data and graph-based pathfinding to generate navigation routes across shelves.
+The app uses **Room Database** to manage warehouse data and applies **graph-based pathfinding** to generate navigation routes across shelves.
 
 ## Key Features
 
-- Warehouse item display
-- Order creation and storage
-- Shelf-based route generation
-- Graph-based navigation logic
-- Shortest-path planning with Dijkstra algorithm
+- Display warehouse items in the app
+- Create and store orders locally
+- Generate shelf-based picking routes
+- Support graph-based warehouse navigation
+- Apply shortest-path planning with Dijkstra algorithm
 
 ## Tech Stack
 
@@ -30,6 +26,18 @@ The app uses Room Database to manage warehouse data and graph-based pathfinding 
 | Database | Room Database |
 | UI | Fragments, RecyclerView |
 | Navigation Logic | Graph model + Dijkstra algorithm |
+
+## Core Components
+
+- **MainActivity**: sets up the main app navigation and initializes the warehouse map model.
+- **DashboardFragment / DashboardViewModel**: load and display warehouse items from Room Database.
+- **ItemAdapter**: binds item data to the RecyclerView list.
+- **WarehouseDatabase / ItemDao**: manage local data storage and item queries.
+- **MapFragment**: displays the warehouse map interface.
+- **WarehouseMapModel**: represents the warehouse as a graph of nodes and edges.
+- **DijkstraNavigator**: calculates shortest paths for picking routes.
+- **NavigationHelper**: converts shelf targets into navigable route data.
+- **WarehouseMapParser**: parses SVG-based warehouse map elements into structured map data.
 
 ## Use Case
 
@@ -44,10 +52,10 @@ This project is designed around a simple warehouse picking scenario:
 
 The goal of this project is to demonstrate:
 
-- practical Android development skills
-- database integration with Room
-- algorithmic thinking in navigation and pathfinding
-- application of software development to logistics scenarios
+- Practical Android development skills
+- Database integration with Room
+- Algorithmic thinking in navigation and pathfinding
+- Application of software development to logistics scenarios
 
 ## Future Improvements
 
